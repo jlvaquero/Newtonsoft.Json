@@ -931,6 +931,7 @@ namespace Newtonsoft.Json
                 case JsonToken.String:
                 case JsonToken.Raw:
                 case JsonToken.Bytes:
+                case JsonToken.Guid:
                     SetPostValueState(updateIndex);
                     break;
             }

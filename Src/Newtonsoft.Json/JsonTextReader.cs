@@ -196,6 +196,13 @@ namespace Newtonsoft.Json
 #endif
                 }
 
+                Guid guid;
+                if (ConvertUtils.TryConvertGuid(_stringReference.ToString(), out guid))
+                {
+                    SetToken(JsonToken.Guid, guid, false);
+                    return;
+                }
+
                 SetToken(JsonToken.String, _stringReference.ToString(), false);
                 _quoteChar = quote;
             }
@@ -467,7 +474,7 @@ namespace Newtonsoft.Json
                                 ParseComment();
                                 return true;
                             }
-                            
+
                             throw JsonReaderException.Create(this, "Additional text encountered after finished reading JSON content: {0}.".FormatWith(CultureInfo.InvariantCulture, _chars[_charPos]));
                         }
                         return false;
@@ -750,7 +757,7 @@ namespace Newtonsoft.Json
                         {
                             return;
                         }
-                        
+
                         throw JsonReaderException.Create(this, "Unexpected character encountered while parsing number: {0}.".FormatWith(CultureInfo.InvariantCulture, currentChar));
                 }
             }
@@ -1408,7 +1415,7 @@ namespace Newtonsoft.Json
                         {
                             throw JsonReaderException.Create(this, "JSON integer {0} is too large to parse.".FormatWith(CultureInfo.InvariantCulture, _stringReference.ToString()));
                         }
-                        
+
                         numberValue = BigIntegerParse(number, CultureInfo.InvariantCulture);
                         numberType = JsonToken.Integer;
 #else

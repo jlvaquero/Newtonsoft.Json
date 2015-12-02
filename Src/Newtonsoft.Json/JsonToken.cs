@@ -23,9 +23,6 @@
 // OTHER DEALINGS IN THE SOFTWARE.
 #endregion
 
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Newtonsoft.Json
 {
@@ -122,6 +119,11 @@ namespace Newtonsoft.Json
         /// <summary>
         /// Byte data.
         /// </summary>
-        Bytes = 17
+        Bytes = 17,
+
+        /// <summary>
+        /// Guid data.
+        /// </summary>
+        Guid = 18
     }
 }

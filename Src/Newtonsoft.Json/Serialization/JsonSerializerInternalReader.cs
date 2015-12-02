@@ -300,6 +300,7 @@ namespace Newtonsoft.Json.Serialization
                     case JsonToken.Float:
                     case JsonToken.Boolean:
                     case JsonToken.Date:
+                    case JsonToken.Guid:
                     case JsonToken.Bytes:
                         return EnsureType(reader, reader.Value, CultureInfo.InvariantCulture, contract, objectType);
                     case JsonToken.String:
