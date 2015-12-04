@@ -208,7 +208,6 @@ namespace Newtonsoft.Json
             }
         }
 
-
         private static void BlockCopyChars(char[] src, int srcOffset, char[] dst, int dstOffset, int count)
         {
             const int charByteCount = 2;
@@ -459,7 +458,9 @@ namespace Newtonsoft.Json
                         // returns true if it hits
                         // end of object or array
                         if (ParsePostValue())
+                        {
                             return true;
+                        }
                         break;
                     case State.Finished:
                         if (EnsureChars(0, false))
@@ -966,7 +967,9 @@ namespace Newtonsoft.Json
                         if (_charsUsed == _charPos)
                         {
                             if (ReadData(true) == 0)
+                            {
                                 throw JsonReaderException.Create(this, "Unexpected end while parsing unquoted property name.");
+                            }
 
                             break;
                         }
@@ -1004,7 +1007,9 @@ namespace Newtonsoft.Json
                         if (_charsUsed == _charPos)
                         {
                             if (ReadData(false) == 0)
+                            {
                                 return false;
+                            }
                         }
                         else
                         {
@@ -1480,7 +1485,9 @@ namespace Newtonsoft.Json
             _charPos++;
 
             if (!EnsureChars(1, false))
+            {
                 throw JsonReaderException.Create(this, "Unexpected end while parsing comment.");
+            }
 
             bool singlelineComment;
 
