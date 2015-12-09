@@ -24,14 +24,11 @@
 #endregion
 
 using System;
-using System.Collections.Generic;
 using System.Globalization;
 #if !(NET20 || NET35 || PORTABLE40 || PORTABLE)
 using System.Numerics;
 #endif
-using System.Text;
 using System.IO;
-using System.Xml;
 using Newtonsoft.Json.Utilities;
 
 namespace Newtonsoft.Json
@@ -675,16 +672,37 @@ namespace Newtonsoft.Json
             InternalWriteValue(JsonToken.String);
 
             string text = null;
-
+            string fs = GetGuidFormatString();
 #if !(DOTNET || PORTABLE40 || PORTABLE)
-            text = value.ToString("D", CultureInfo.InvariantCulture);
+
+            text = value.ToString(fs, CultureInfo.InvariantCulture);
 #else
-            text = value.ToString("D");
+            text = value.ToString(fs);
 #endif
 
             _writer.Write(_quoteChar);
             _writer.Write(text);
             _writer.Write(_quoteChar);
+        }
+
+        private string GetGuidFormatString()
+        {
+            switch (GuidHandling)
+            {
+                case GuidHandling.Default:
+                case GuidHandling.Hyphens:
+                case GuidHandling.Auto:
+                default:
+                    return "D";
+                case GuidHandling.Digits:
+                    return "N";
+                case GuidHandling.Braces:
+                    return "B";
+                case GuidHandling.Parentheses:
+                    return "P";
+                case GuidHandling.Hexadecimal:
+                    return "X";
+            }
         }
 
         /// <summary>

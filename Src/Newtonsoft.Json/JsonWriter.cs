@@ -219,6 +219,7 @@ namespace Newtonsoft.Json
         private FloatFormatHandling _floatFormatHandling;
         private string _dateFormatString;
         private CultureInfo _culture;
+        private GuidHandling _guidHandling;
 
         /// <summary>
         /// Indicates how JSON text output is formatted.
@@ -268,6 +269,22 @@ namespace Newtonsoft.Json
                 }
 
                 _dateTimeZoneHandling = value;
+            }
+        }
+
+        /// <summary>
+        /// Get or set <see cref="Guid"/> are handling when writing JSON text.
+        /// </summary>
+        public GuidHandling GuidHandling
+        {
+            get { return _guidHandling; }
+            set
+            {
+                if (value < GuidHandling.Default || value > GuidHandling.Auto)
+                {
+                    throw new ArgumentOutOfRangeException("value");
+                }
+                _guidHandling = value;
             }
         }
 
@@ -1710,5 +1727,7 @@ namespace Newtonsoft.Json
         {
             AutoComplete(JsonToken.Comment);
         }
+
+
     }
 }

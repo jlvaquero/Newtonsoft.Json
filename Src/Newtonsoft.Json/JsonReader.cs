@@ -23,16 +23,16 @@
 // OTHER DEALINGS IN THE SOFTWARE.
 #endregion
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Globalization;
 using Newtonsoft.Json.Serialization;
 using Newtonsoft.Json.Utilities;
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
 #if NET20
 using Newtonsoft.Json.Utilities.LinqBridge;
 #else
-using System.Linq;
+
 
 #endif
 
@@ -127,6 +127,7 @@ namespace Newtonsoft.Json
         private bool _hasExceededMaxDepth;
         internal DateParseHandling _dateParseHandling;
         internal FloatParseHandling _floatParseHandling;
+        internal GuidHandling _guidHandling;
         private string _dateFormatString;
         private List<JsonPosition> _stack;
 
@@ -168,6 +169,22 @@ namespace Newtonsoft.Json
         }
 
         /// <summary>
+        /// Get or set how <see cref="Guid"/> are handling when reading JSON.
+        /// </summary>
+        public GuidHandling GuidHandling
+        {
+            get { return _guidHandling; }
+            set
+            {
+                if (value < GuidHandling.Default || value > GuidHandling.Auto)
+                {
+                    throw new ArgumentOutOfRangeException("value");
+                }
+
+                _guidHandling = value;
+            }
+        }
+        /// <summary>
         /// Get or set how <see cref="DateTime"/> time zones are handling when reading JSON.
         /// </summary>
         public DateTimeZoneHandling DateTimeZoneHandling
@@ -194,11 +211,11 @@ namespace Newtonsoft.Json
             {
                 if (value < DateParseHandling.None ||
 #if !NET20
-                    value > DateParseHandling.DateTimeOffset
+ value > DateParseHandling.DateTimeOffset
 #else
                     value > DateParseHandling.DateTime
 #endif
-                    )
+)
                 {
                     throw new ArgumentOutOfRangeException("value");
                 }

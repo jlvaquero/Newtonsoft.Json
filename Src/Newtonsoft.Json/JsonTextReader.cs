@@ -23,14 +23,12 @@
 // OTHER DEALINGS IN THE SOFTWARE.
 #endregion
 
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Runtime.CompilerServices;
-using System.Text;
-using System.IO;
-using System.Globalization;
 using Newtonsoft.Json.Utilities;
+using System;
+using System.Diagnostics;
+using System.Globalization;
+using System.IO;
+using System.Runtime.CompilerServices;
 
 namespace Newtonsoft.Json
 {
@@ -77,7 +75,6 @@ namespace Newtonsoft.Json
             {
                 throw new ArgumentNullException("reader");
             }
-
             _reader = reader;
             _lineNumber = 1;
         }
@@ -196,11 +193,51 @@ namespace Newtonsoft.Json
 #endif
                 }
 
-                Guid guid;
-                if (ConvertUtils.TryConvertGuid(_stringReference.ToString(), out guid))
+
+                if (_guidHandling != GuidHandling.Default)
                 {
-                    SetToken(JsonToken.Guid, guid, false);
-                    return;
+                    Guid guid;
+
+                    if (_guidHandling == GuidHandling.Braces && ConvertUtils.TryConvertGuid(_stringReference.ToString(), "B", out guid))
+                    {
+                        SetToken(JsonToken.Guid, guid, false);
+                        return;
+                    }
+
+                    if (_guidHandling == GuidHandling.Digits && ConvertUtils.TryConvertGuid(_stringReference.ToString(), "N", out guid))
+                    {
+                        SetToken(JsonToken.Guid, guid, false);
+                        return;
+                    }
+
+                    if (_guidHandling == GuidHandling.Hyphens && ConvertUtils.TryConvertGuid(_stringReference.ToString(), "D", out guid))
+                    {
+                        SetToken(JsonToken.Guid, guid, false);
+                        return;
+                    }
+
+                    if (_guidHandling == GuidHandling.Hexadecimal && ConvertUtils.TryConvertGuid(_stringReference.ToString(), "X", out guid))
+                    {
+                        SetToken(JsonToken.Guid, guid, false);
+                        return;
+                    }
+
+                    if (_guidHandling == GuidHandling.Parentheses && ConvertUtils.TryConvertGuid(_stringReference.ToString(), "P", out guid))
+                    {
+                        SetToken(JsonToken.Guid, guid, false);
+                        return;
+                    }
+
+                    if (ConvertUtils.TryConvertGuid(_stringReference.ToString(), out guid))
+                    {
+                        SetToken(JsonToken.Guid, guid, false);
+                        return;
+                    }
+                    if (_guidHandling == GuidHandling.Auto && ConvertUtils.TryAutoConvertGuid(_stringReference.ToString(), out guid))
+                    {
+                        SetToken(JsonToken.Guid, guid, false);
+                        return;
+                    }
                 }
 
                 SetToken(JsonToken.String, _stringReference.ToString(), false);

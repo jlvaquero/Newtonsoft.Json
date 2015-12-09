@@ -23,17 +23,16 @@
 // OTHER DEALINGS IN THE SOFTWARE.
 #endregion
 
+using Newtonsoft.Json.Serialization;
+using Newtonsoft.Json.Utilities;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
-using System.Runtime.Serialization.Formatters;
-using Newtonsoft.Json.Converters;
-using Newtonsoft.Json.Serialization;
-using Newtonsoft.Json.Utilities;
 using System.Runtime.Serialization;
+using System.Runtime.Serialization.Formatters;
 using ErrorEventArgs = Newtonsoft.Json.Serialization.ErrorEventArgs;
 
 namespace Newtonsoft.Json
@@ -69,6 +68,7 @@ namespace Newtonsoft.Json
         private FloatFormatHandling? _floatFormatHandling;
         private FloatParseHandling? _floatParseHandling;
         private StringEscapeHandling? _stringEscapeHandling;
+        private GuidHandling? _guidHandling;
         private CultureInfo _culture;
         private int? _maxDepth;
         private bool _maxDepthSet;
@@ -80,6 +80,7 @@ namespace Newtonsoft.Json
         /// Occurs when the <see cref="JsonSerializer"/> errors during serialization and deserialization.
         /// </summary>
         public virtual event EventHandler<ErrorEventArgs> Error;
+
 
         /// <summary>
         /// Gets or sets the <see cref="IReferenceResolver"/> used by the serializer when resolving references.
@@ -484,7 +485,7 @@ namespace Newtonsoft.Json
             _metadataPropertyHandling = JsonSerializerSettings.DefaultMetadataPropertyHandling;
             _context = JsonSerializerSettings.DefaultContext;
             _binder = DefaultSerializationBinder.Instance;
-
+            _guidHandling = JsonSerializerSettings.DefaultGuidHandling;
             _culture = JsonSerializerSettings.DefaultCulture;
             _contractResolver = DefaultContractResolver.Instance;
         }
@@ -700,6 +701,10 @@ namespace Newtonsoft.Json
                 serializer._maxDepth = settings._maxDepth;
                 serializer._maxDepthSet = settings._maxDepthSet;
             }
+            if (settings._guidHandling != null)
+            {
+                serializer._guidHandling = settings._guidHandling;
+            }
         }
 
         /// <summary>
@@ -732,9 +737,11 @@ namespace Newtonsoft.Json
             DateTimeZoneHandling? previousDateTimeZoneHandling;
             DateParseHandling? previousDateParseHandling;
             FloatParseHandling? previousFloatParseHandling;
+            GuidHandling? previousGuidHandling;
             int? previousMaxDepth;
             string previousDateFormatString;
-            SetupReader(reader, out previousCulture, out previousDateTimeZoneHandling, out previousDateParseHandling, out previousFloatParseHandling, out previousMaxDepth, out previousDateFormatString);
+
+            SetupReader(reader, out previousCulture, out previousDateTimeZoneHandling, out previousDateParseHandling, out previousFloatParseHandling, out previousMaxDepth, out previousDateFormatString, out previousGuidHandling);
 
             TraceJsonReader traceJsonReader = (TraceWriter != null && TraceWriter.LevelFilter >= TraceLevel.Verbose)
                 ? new TraceJsonReader(reader)
@@ -806,9 +813,11 @@ namespace Newtonsoft.Json
             DateTimeZoneHandling? previousDateTimeZoneHandling;
             DateParseHandling? previousDateParseHandling;
             FloatParseHandling? previousFloatParseHandling;
+            GuidHandling? previousGuidHandling;
             int? previousMaxDepth;
             string previousDateFormatString;
-            SetupReader(reader, out previousCulture, out previousDateTimeZoneHandling, out previousDateParseHandling, out previousFloatParseHandling, out previousMaxDepth, out previousDateFormatString);
+
+            SetupReader(reader, out previousCulture, out previousDateTimeZoneHandling, out previousDateParseHandling, out previousFloatParseHandling, out previousMaxDepth, out previousDateFormatString, out previousGuidHandling);
 
             TraceJsonReader traceJsonReader = (TraceWriter != null && TraceWriter.LevelFilter >= TraceLevel.Verbose)
                 ? new TraceJsonReader(reader)
@@ -827,7 +836,7 @@ namespace Newtonsoft.Json
             return value;
         }
 
-        private void SetupReader(JsonReader reader, out CultureInfo previousCulture, out DateTimeZoneHandling? previousDateTimeZoneHandling, out DateParseHandling? previousDateParseHandling, out FloatParseHandling? previousFloatParseHandling, out int? previousMaxDepth, out string previousDateFormatString)
+        private void SetupReader(JsonReader reader, out CultureInfo previousCulture, out DateTimeZoneHandling? previousDateTimeZoneHandling, out DateParseHandling? previousDateParseHandling, out FloatParseHandling? previousFloatParseHandling, out int? previousMaxDepth, out string previousDateFormatString, out GuidHandling? previousGuidHandling)
         {
             if (_culture != null && !_culture.Equals(reader.Culture))
             {
@@ -887,6 +896,16 @@ namespace Newtonsoft.Json
             else
             {
                 previousDateFormatString = null;
+            }
+
+            if (_guidHandling != null && reader.GuidHandling != _guidHandling)
+            {
+                previousGuidHandling = reader.GuidHandling;
+                reader.GuidHandling = _guidHandling.Value;
+            }
+            else
+            {
+                previousGuidHandling = null;
             }
 
             JsonTextReader textReader = reader as JsonTextReader;
@@ -1043,6 +1062,13 @@ namespace Newtonsoft.Json
                 jsonWriter.DateFormatString = _dateFormatString;
             }
 
+            GuidHandling? previousGuidHandling = null;
+            if (_guidHandling != null && jsonWriter.GuidHandling != _guidHandling)
+            {
+                previousGuidHandling = jsonWriter.GuidHandling;
+                jsonWriter.GuidHandling = _guidHandling.Value;
+            }
+
             TraceJsonWriter traceJsonWriter = (TraceWriter != null && TraceWriter.LevelFilter >= TraceLevel.Verbose)
                 ? new TraceJsonWriter(jsonWriter)
                 : null;
@@ -1083,6 +1109,10 @@ namespace Newtonsoft.Json
             if (previousCulture != null)
             {
                 jsonWriter.Culture = previousCulture;
+            }
+            if (previousGuidHandling != null)
+            {
+                jsonWriter.GuidHandling = previousGuidHandling.Value;
             }
         }
 

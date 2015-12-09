@@ -23,13 +23,13 @@
 // OTHER DEALINGS IN THE SOFTWARE.
 #endregion
 
+using Newtonsoft.Json.Serialization;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Runtime.Serialization.Formatters;
-using Newtonsoft.Json.Serialization;
 using System.Runtime.Serialization;
+using System.Runtime.Serialization.Formatters;
 
 namespace Newtonsoft.Json
 {
@@ -46,6 +46,7 @@ namespace Newtonsoft.Json
         internal const PreserveReferencesHandling DefaultPreserveReferencesHandling = PreserveReferencesHandling.None;
         internal const ConstructorHandling DefaultConstructorHandling = ConstructorHandling.Default;
         internal const TypeNameHandling DefaultTypeNameHandling = TypeNameHandling.None;
+        internal const GuidHandling DefaultGuidHandling = GuidHandling.Default;
         internal const MetadataPropertyHandling DefaultMetadataPropertyHandling = MetadataPropertyHandling.Default;
         internal const FormatterAssemblyStyle DefaultTypeNameAssemblyFormat = FormatterAssemblyStyle.Simple;
         internal static readonly StreamingContext DefaultContext;
@@ -86,6 +87,7 @@ namespace Newtonsoft.Json
         internal ConstructorHandling? _constructorHandling;
         internal TypeNameHandling? _typeNameHandling;
         internal MetadataPropertyHandling? _metadataPropertyHandling;
+        internal GuidHandling? _guidHandling;
 
         /// <summary>
         /// Gets or sets how reference loops (e.g. a class referencing itself) is handled.
@@ -367,6 +369,16 @@ namespace Newtonsoft.Json
         {
             get { return _culture ?? DefaultCulture; }
             set { _culture = value; }
+        }
+        /// <summary>
+        ///  /// <summary>
+        /// Get or set how <see cref="Guid"/> values are formatted when writing JSON text, and the expected Guid format when reading JSON text.
+        /// </summary>
+        /// </summary>
+        public GuidHandling GuidHandling
+        {
+            get { return _guidHandling ?? DefaultGuidHandling; }
+            set { _guidHandling = value; }
         }
 
         /// <summary>
