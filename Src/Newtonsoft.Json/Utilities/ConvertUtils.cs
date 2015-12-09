@@ -35,9 +35,11 @@ using System.Reflection;
 #if NET20
 using Newtonsoft.Json.Utilities.LinqBridge;
 #endif
+#if (NET20 || NET35)
+using System.Text.RegularExpressions;
+#endif
 #if !(DOTNET || PORTABLE40 || PORTABLE)
 using System.Data.SqlTypes;
-
 #endif
 
 namespace Newtonsoft.Json.Utilities
@@ -706,7 +708,7 @@ namespace Newtonsoft.Json.Utilities
 #if !(NET20 || NET35)
             return Version.TryParse(input, out result);
 #else
-    // improve failure performance with regex?
+            // improve failure performance with regex?
             try
             {
                 result = new Version(input);
@@ -946,7 +948,7 @@ namespace Newtonsoft.Json.Utilities
 #endif
         }
 
-        public static bool TryConvertGuid(string s, string format, out Guid g)
+        public static bool TryConvertGuid(string s, string formatString, out Guid g)
         {
             // GUID has to have format 00000000-0000-0000-0000-000000000000
 #if NET20 || NET35
@@ -964,7 +966,7 @@ namespace Newtonsoft.Json.Utilities
             g = Guid.Empty;
             return false;
 #else
-            return Guid.TryParseExact(s, format, out g);
+            return Guid.TryParseExact(s, formatString, out g);
 #endif
         }
 
