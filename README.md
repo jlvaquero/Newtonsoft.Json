@@ -7,7 +7,7 @@
 - [License](LICENSE.md)
 - [Stack Overflow](http://stackoverflow.com/questions/tagged/json.net)
 
-GUID Handling added from .NET 4.0 onwards (working in previous .NET versions). Currently when you serilize a GUID in a Object Array and deserilize it; the GUID become a plain String.
+GUID Handling added from .NET 4.0 onwards (working in previous .NET versions). Currently when you serilize a GUID in a Object Array and deserialize it; the GUID become a plain String instance even with full TypeNameHandling.
 
 ```c#
 public class Clase
@@ -31,7 +31,6 @@ public class Clase
 
  Clase deserializedr = JsonConvert.DeserializeObject<Clase>(output, new JsonSerializerSettings
 {
-    GuidHandling = GuidHandling.Parentheses,
     TypeNameHandling = TypeNameHandling.All
 });
 
@@ -40,7 +39,7 @@ public class Clase
 
 How GUID Handling works:
 
-A new setting was added to JsonSerializerSettings. This setting allows you to control GUID format when serilize/deserialize.
+A new setting was added to JsonSerializerSettings. This setting allows you to control GUID format when serialize/deserialize.
 
 ```c#
  public enum GuidHandling
