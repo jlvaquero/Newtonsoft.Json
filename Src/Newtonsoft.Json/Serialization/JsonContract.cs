@@ -309,7 +309,7 @@ namespace Newtonsoft.Json.Serialization
 
         internal JsonContract(Type underlyingType)
         {
-            ValidationUtils.ArgumentNotNull(underlyingType, "underlyingType");
+            ValidationUtils.ArgumentNotNull(underlyingType, nameof(underlyingType));
 
             UnderlyingType = underlyingType;
 
@@ -347,6 +347,10 @@ namespace Newtonsoft.Json.Serialization
                 InternalReadType = ReadType.ReadAsDateTimeOffset;
             }
 #endif
+            else if (NonNullableUnderlyingType == typeof(double))
+            {
+                InternalReadType = ReadType.ReadAsDouble;
+            }
             else
             {
                 InternalReadType = ReadType.Read;

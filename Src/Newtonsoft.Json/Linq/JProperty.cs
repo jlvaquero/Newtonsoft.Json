@@ -299,7 +299,7 @@ namespace Newtonsoft.Json.Linq
         internal JProperty(string name)
         {
             // called from JTokenWriter
-            ValidationUtils.ArgumentNotNull(name, "name");
+            ValidationUtils.ArgumentNotNull(name, nameof(name));
 
             _name = name;
         }
@@ -321,7 +321,7 @@ namespace Newtonsoft.Json.Linq
         /// <param name="content">The property content.</param>
         public JProperty(string name, object content)
         {
-            ValidationUtils.ArgumentNotNull(name, "name");
+            ValidationUtils.ArgumentNotNull(name, nameof(name));
 
             _name = name;
 
@@ -382,10 +382,7 @@ namespace Newtonsoft.Json.Linq
                 }
             }
 
-            while (reader.TokenType == JsonToken.Comment)
-            {
-                reader.Read();
-            }
+            reader.MoveToContent();
 
             if (reader.TokenType != JsonToken.PropertyName)
             {

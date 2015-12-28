@@ -46,7 +46,7 @@ namespace Newtonsoft.Json
         private bool _quoteName;
         private bool[] _charEscapeFlags;
         private char[] _writeBuffer;
-        private IJsonBufferPool<char> _bufferPool;
+        private IArrayPool<char> _arrayPool;
         private char[] _indentChars;
 
         private Base64Encoder Base64Encoder
@@ -63,19 +63,19 @@ namespace Newtonsoft.Json
         }
 
         /// <summary>
-        /// Gets or sets the writer's character buffer pool.
+        /// Gets or sets the writer's character array pool.
         /// </summary>
-        public IJsonBufferPool<char> BufferPool
+        public IArrayPool<char> ArrayPool
         {
-            get { return _bufferPool; }
+            get { return _arrayPool; }
             set
             {
                 if (value == null)
                 {
-                    throw new ArgumentNullException("value");
+                    throw new ArgumentNullException(nameof(value));
                 }
 
-                _bufferPool = value;
+                _arrayPool = value;
             }
         }
 
@@ -147,7 +147,7 @@ namespace Newtonsoft.Json
         {
             if (textWriter == null)
             {
-                throw new ArgumentNullException("textWriter");
+                throw new ArgumentNullException(nameof(textWriter));
             }
 
             _writer = textWriter;
@@ -174,7 +174,11 @@ namespace Newtonsoft.Json
         {
             base.Close();
 
-            BufferUtils.ReturnBuffer(_bufferPool, ref _writeBuffer);
+            if (_writeBuffer != null)
+            {
+                BufferUtils.ReturnBuffer(_arrayPool, _writeBuffer);
+                _writeBuffer = null;
+            }
 
             if (CloseOutput && _writer != null)
             {
@@ -415,7 +419,7 @@ namespace Newtonsoft.Json
         private void WriteEscapedString(string value, bool quote)
         {
             EnsureWriteBuffer();
-            JavaScriptUtils.WriteEscapedJavaScriptString(_writer, value, _quoteChar, quote, _charEscapeFlags, StringEscapeHandling, _bufferPool, ref _writeBuffer);
+            JavaScriptUtils.WriteEscapedJavaScriptString(_writer, value, _quoteChar, quote, _charEscapeFlags, StringEscapeHandling, _arrayPool, ref _writeBuffer);
         }
 
         /// <summary>
@@ -483,7 +487,7 @@ namespace Newtonsoft.Json
             else
             {
                 InternalWriteValue(JsonToken.Float);
-                WriteValueInternal(JsonConvert.ToString(value.Value, FloatFormatHandling, QuoteChar, true), JsonToken.Float);
+                WriteValueInternal(JsonConvert.ToString(value.GetValueOrDefault(), FloatFormatHandling, QuoteChar, true), JsonToken.Float);
             }
         }
 
@@ -510,7 +514,7 @@ namespace Newtonsoft.Json
             else
             {
                 InternalWriteValue(JsonToken.Float);
-                WriteValueInternal(JsonConvert.ToString(value.Value, FloatFormatHandling, QuoteChar, true), JsonToken.Float);
+                WriteValueInternal(JsonConvert.ToString(value.GetValueOrDefault(), FloatFormatHandling, QuoteChar, true), JsonToken.Float);
             }
         }
 
@@ -772,7 +776,7 @@ namespace Newtonsoft.Json
             if (_writeBuffer == null)
             {
                 // maximum buffer sized used when writing iso date
-                _writeBuffer = BufferUtils.RentBuffer(_bufferPool, 35);
+                _writeBuffer = BufferUtils.RentBuffer(_arrayPool, 35);
             }
         }
 

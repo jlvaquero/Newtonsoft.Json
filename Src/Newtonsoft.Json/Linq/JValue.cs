@@ -683,12 +683,12 @@ namespace Newtonsoft.Json.Linq
                 return JTokenType.String;
             }
 
-            switch (current.Value)
+            switch (current.GetValueOrDefault())
             {
                 case JTokenType.Comment:
                 case JTokenType.String:
                 case JTokenType.Raw:
-                    return current.Value;
+                    return current.GetValueOrDefault();
                 default:
                     return JTokenType.String;
             }
@@ -985,7 +985,7 @@ namespace Newtonsoft.Json.Linq
         {
             public override bool TryConvert(JValue instance, ConvertBinder binder, out object result)
             {
-                if (binder.Type == typeof(JValue))
+                if (binder.Type == typeof(JValue) || binder.Type == typeof(JToken))
                 {
                     result = instance;
                     return true;

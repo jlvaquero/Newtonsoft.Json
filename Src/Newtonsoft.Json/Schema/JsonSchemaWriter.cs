@@ -45,7 +45,7 @@ namespace Newtonsoft.Json.Schema
 
         public JsonSchemaWriter(JsonWriter writer, JsonSchemaResolver resolver)
         {
-            ValidationUtils.ArgumentNotNull(writer, "writer");
+            ValidationUtils.ArgumentNotNull(writer, nameof(writer));
             _writer = writer;
             _resolver = resolver;
         }
@@ -67,7 +67,7 @@ namespace Newtonsoft.Json.Schema
 
         public void WriteSchema(JsonSchema schema)
         {
-            ValidationUtils.ArgumentNotNull(schema, "schema");
+            ValidationUtils.ArgumentNotNull(schema, nameof(schema));
 
             if (!_resolver.LoadedSchemas.Contains(schema))
             {
@@ -84,7 +84,7 @@ namespace Newtonsoft.Json.Schema
             WritePropertyIfNotNull(_writer, JsonSchemaConstants.TransientPropertyName, schema.Transient);
             if (schema.Type != null)
             {
-                WriteType(JsonSchemaConstants.TypePropertyName, _writer, schema.Type.Value);
+                WriteType(JsonSchemaConstants.TypePropertyName, _writer, schema.Type.GetValueOrDefault());
             }
             if (!schema.AllowAdditionalProperties)
             {
@@ -143,7 +143,7 @@ namespace Newtonsoft.Json.Schema
             }
             if (schema.Disallow != null)
             {
-                WriteType(JsonSchemaConstants.DisallowPropertyName, _writer, schema.Disallow.Value);
+                WriteType(JsonSchemaConstants.DisallowPropertyName, _writer, schema.Disallow.GetValueOrDefault());
             }
             if (schema.Extends != null && schema.Extends.Count > 0)
             {

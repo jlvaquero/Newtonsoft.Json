@@ -121,10 +121,13 @@ namespace Newtonsoft.Json.Utilities
         {
             if (enumType == null)
             {
-                throw new ArgumentNullException("enumType");
+                throw new ArgumentNullException(nameof(enumType));
             }
 
-            ValidationUtils.ArgumentTypeIsEnum(enumType, "enumType");
+            if (!enumType.IsEnum())
+            {
+                throw new ArgumentException("Type {0} is not an Enum.".FormatWith(CultureInfo.InvariantCulture, enumType), nameof(enumType));
+            }
 
             IList<object> enumValues = GetValues(enumType);
             IList<string> enumNames = GetNames(enumType);

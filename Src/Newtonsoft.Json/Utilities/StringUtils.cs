@@ -69,7 +69,7 @@ namespace Newtonsoft.Json.Utilities
         {
             // leave this a private to force code to use an explicit overload
             // avoids stack memory being reserved for the object array
-            ValidationUtils.ArgumentNotNull(format, "format");
+            ValidationUtils.ArgumentNotNull(format, nameof(format));
 
             return string.Format(provider, format, args);
         }
@@ -85,7 +85,7 @@ namespace Newtonsoft.Json.Utilities
         {
             if (s == null)
             {
-                throw new ArgumentNullException("s");
+                throw new ArgumentNullException(nameof(s));
             }
 
             if (s.Length == 0)
@@ -148,11 +148,11 @@ namespace Newtonsoft.Json.Utilities
         {
             if (source == null)
             {
-                throw new ArgumentNullException("source");
+                throw new ArgumentNullException(nameof(source));
             }
             if (valueSelector == null)
             {
-                throw new ArgumentNullException("valueSelector");
+                throw new ArgumentNullException(nameof(valueSelector));
             }
 
             var caseInsensitiveResults = source.Where(s => string.Equals(valueSelector(s), testValue, StringComparison.OrdinalIgnoreCase));

@@ -65,18 +65,15 @@ namespace Newtonsoft.Json.Serialization
 
         public void Populate(JsonReader reader, object target)
         {
-            ValidationUtils.ArgumentNotNull(target, "target");
+            ValidationUtils.ArgumentNotNull(target, nameof(target));
 
             Type objectType = target.GetType();
 
             JsonContract contract = Serializer._contractResolver.ResolveContract(objectType);
 
-            while (reader.TokenType == JsonToken.None || reader.TokenType == JsonToken.Comment)
+            if (!reader.MoveToContent())
             {
-                if (!reader.Read())
-                {
-                    throw JsonSerializationException.Create(reader, "No JSON content found.");
-                }
+                throw JsonSerializationException.Create(reader, "No JSON content found.");
             }
 
             if (reader.TokenType == JsonToken.StartArray)
@@ -94,16 +91,16 @@ namespace Newtonsoft.Json.Serialization
             }
             else if (reader.TokenType == JsonToken.StartObject)
             {
-                CheckedRead(reader);
+                reader.ReadAndAssert();
 
                 string id = null;
                 if (Serializer.MetadataPropertyHandling != MetadataPropertyHandling.Ignore
                     && reader.TokenType == JsonToken.PropertyName
                     && string.Equals(reader.Value.ToString(), JsonTypeReflector.IdPropertyName, StringComparison.Ordinal))
                 {
-                    CheckedRead(reader);
+                    reader.ReadAndAssert();
                     id = (reader.Value != null) ? reader.Value.ToString() : null;
-                    CheckedRead(reader);
+                    reader.ReadAndAssert();
                 }
 
                 if (contract.ContractType == JsonContractType.Dictionary)
@@ -140,7 +137,7 @@ namespace Newtonsoft.Json.Serialization
         {
             if (reader == null)
             {
-                throw new ArgumentNullException("reader");
+                throw new ArgumentNullException(nameof(reader));
             }
 
             JsonContract contract = GetContractSafe(objectType);
@@ -210,7 +207,7 @@ namespace Newtonsoft.Json.Serialization
 
         private JToken CreateJToken(JsonReader reader, JsonContract contract)
         {
-            ValidationUtils.ArgumentNotNull(reader, "reader");
+            ValidationUtils.ArgumentNotNull(reader, nameof(reader));
 
             if (contract != null)
             {
@@ -237,7 +234,7 @@ namespace Newtonsoft.Json.Serialization
 
         private JToken CreateJObject(JsonReader reader)
         {
-            ValidationUtils.ArgumentNotNull(reader, "reader");
+            ValidationUtils.ArgumentNotNull(reader, nameof(reader));
 
             // this is needed because we've already read inside the object, looking for metadata properties
             using (JTokenWriter writer = new JTokenWriter())
@@ -249,13 +246,10 @@ namespace Newtonsoft.Json.Serialization
                     if (reader.TokenType == JsonToken.PropertyName)
                     {
                         string propertyName = (string)reader.Value;
-                        do
+                        if (!reader.ReadAndMoveToContent())
                         {
-                            if (!reader.Read())
-                            {
-                                break;
-                            }
-                        } while (reader.TokenType == JsonToken.Comment);
+                            break;
+                        }
 
                         if (CheckPropertyName(reader, propertyName))
                         {
@@ -422,7 +416,7 @@ namespace Newtonsoft.Json.Serialization
             if (Serializer.MetadataPropertyHandling == MetadataPropertyHandling.Ignore)
             {
                 // don't look for metadata properties
-                CheckedRead(reader);
+                reader.ReadAndAssert();
                 id = null;
             }
             else if (Serializer.MetadataPropertyHandling == MetadataPropertyHandling.ReadAhead)
@@ -440,7 +434,7 @@ namespace Newtonsoft.Json.Serialization
                     tokenReader.SupportMultipleContent = reader.SupportMultipleContent;
 
                     // start
-                    CheckedRead(tokenReader);
+                    tokenReader.ReadAndAssert();
 
                     reader = tokenReader;
                 }
@@ -453,7 +447,7 @@ namespace Newtonsoft.Json.Serialization
             }
             else
             {
-                CheckedRead(reader);
+                reader.ReadAndAssert();
                 object newValue;
                 if (ReadMetadataProperties(reader, ref resolvedObjectType, ref contract, member, containerContract, containerMember, existingValue, out newValue, out id))
                 {
@@ -499,7 +493,7 @@ namespace Newtonsoft.Json.Serialization
                         && reader.TokenType == JsonToken.PropertyName
                         && string.Equals(reader.Value.ToString(), JsonTypeReflector.ValuePropertyName, StringComparison.Ordinal))
                     {
-                        CheckedRead(reader);
+                        reader.ReadAndAssert();
 
                         // the token should not be an object because the $type value could have been included in the object
                         // without needing the $value property
@@ -510,7 +504,7 @@ namespace Newtonsoft.Json.Serialization
 
                         object value = CreateValueInternal(reader, resolvedObjectType, primitiveContract, member, null, null, existingValue);
 
-                        CheckedRead(reader);
+                        reader.ReadAndAssert();
                         return value;
                     }
                     break;
@@ -642,7 +636,7 @@ namespace Newtonsoft.Json.Serialization
                 {
                     string qualifiedTypeName = (string)typeToken;
                     JsonReader typeTokenReader = typeToken.CreateReader();
-                    CheckedRead(typeTokenReader);
+                    typeTokenReader.ReadAndAssert();
                     ResolveTypeName(typeTokenReader, ref objectType, ref contract, member, containerContract, containerMember, qualifiedTypeName);
 
                     JToken valueToken = current[JsonTypeReflector.ValuePropertyName];
@@ -650,7 +644,7 @@ namespace Newtonsoft.Json.Serialization
                     {
                         while (true)
                         {
-                            CheckedRead(reader);
+                            reader.ReadAndAssert();
                             if (reader.TokenType == JsonToken.PropertyName)
                             {
                                 if ((string)reader.Value == JsonTypeReflector.ValuePropertyName)
@@ -659,7 +653,7 @@ namespace Newtonsoft.Json.Serialization
                                 }
                             }
 
-                            CheckedRead(reader);
+                            reader.ReadAndAssert();
                             reader.Skip();
                         }
                     }
@@ -673,7 +667,7 @@ namespace Newtonsoft.Json.Serialization
                 if (valuesToken != null)
                 {
                     JsonReader listReader = valuesToken.CreateReader();
-                    CheckedRead(listReader);
+                    listReader.ReadAndAssert();
                     newValue = CreateList(listReader, objectType, contract, member, existingValue, id);
 
                     reader.Skip();
@@ -681,7 +675,7 @@ namespace Newtonsoft.Json.Serialization
                 }
             }
 
-            CheckedRead(reader);
+            reader.ReadAndAssert();
             return false;
         }
 
@@ -706,7 +700,7 @@ namespace Newtonsoft.Json.Serialization
 
                         if (string.Equals(propertyName, JsonTypeReflector.RefPropertyName, StringComparison.Ordinal))
                         {
-                            CheckedRead(reader);
+                            reader.ReadAndAssert();
                             if (reader.TokenType != JsonToken.String && reader.TokenType != JsonToken.Null)
                             {
                                 throw JsonSerializationException.Create(reader, "JSON reference {0} property must have a string or null value.".FormatWith(CultureInfo.InvariantCulture, JsonTypeReflector.RefPropertyName));
@@ -714,7 +708,7 @@ namespace Newtonsoft.Json.Serialization
 
                             string reference = (reader.Value != null) ? reader.Value.ToString() : null;
 
-                            CheckedRead(reader);
+                            reader.ReadAndAssert();
 
                             if (reference != null)
                             {
@@ -739,29 +733,29 @@ namespace Newtonsoft.Json.Serialization
                         }
                         else if (string.Equals(propertyName, JsonTypeReflector.TypePropertyName, StringComparison.Ordinal))
                         {
-                            CheckedRead(reader);
+                            reader.ReadAndAssert();
                             string qualifiedTypeName = reader.Value.ToString();
 
                             ResolveTypeName(reader, ref objectType, ref contract, member, containerContract, containerMember, qualifiedTypeName);
 
-                            CheckedRead(reader);
+                            reader.ReadAndAssert();
 
                             metadataProperty = true;
                         }
                         else if (string.Equals(propertyName, JsonTypeReflector.IdPropertyName, StringComparison.Ordinal))
                         {
-                            CheckedRead(reader);
+                            reader.ReadAndAssert();
 
                             id = (reader.Value != null) ? reader.Value.ToString() : null;
 
-                            CheckedRead(reader);
+                            reader.ReadAndAssert();
                             metadataProperty = true;
                         }
                         else if (string.Equals(propertyName, JsonTypeReflector.ArrayValuesPropertyName, StringComparison.Ordinal))
                         {
-                            CheckedRead(reader);
+                            reader.ReadAndAssert();
                             object list = CreateList(reader, objectType, contract, member, existingValue, id);
-                            CheckedRead(reader);
+                            reader.ReadAndAssert();
                             newValue = list;
                             return true;
                         }
@@ -841,14 +835,6 @@ namespace Newtonsoft.Json.Serialization
             }
 
             return arrayContract;
-        }
-
-        private void CheckedRead(JsonReader reader)
-        {
-            if (!reader.Read())
-            {
-                throw JsonSerializationException.Create(reader, "Unexpected end when deserializing object.");
-            }
         }
 
         private object CreateList(JsonReader reader, Type objectType, JsonContract contract, JsonProperty member, object existingValue, string id)
@@ -1476,8 +1462,6 @@ namespace Newtonsoft.Json.Serialization
                                     currentList = listStack.Peek();
                                     previousErrorIndex = null;
                                     break;
-                                case JsonToken.Comment:
-                                    break;
                                 default:
                                     object value;
 
@@ -1631,8 +1615,6 @@ namespace Newtonsoft.Json.Serialization
                             case JsonToken.EndArray:
                                 finished = true;
                                 break;
-                            case JsonToken.Comment:
-                                break;
                             default:
                                 object value;
 
@@ -1763,7 +1745,7 @@ namespace Newtonsoft.Json.Serialization
             JsonConverter itemConverter = GetConverter(itemContract, null, contract, member);
 
             JsonReader tokenReader = token.CreateReader();
-            CheckedRead(tokenReader); // Move to first token
+            tokenReader.ReadAndAssert(); // Move to first token
 
             object result;
             if (itemConverter != null && itemConverter.CanRead)
@@ -1903,7 +1885,7 @@ namespace Newtonsoft.Json.Serialization
 
         private object CreateObjectUsingCreatorWithParameters(JsonReader reader, JsonObjectContract contract, JsonProperty containerProperty, ObjectConstructor<object> creator, string id)
         {
-            ValidationUtils.ArgumentNotNull(creator, "creator");
+            ValidationUtils.ArgumentNotNull(creator, nameof(creator));
 
             // only need to keep a track of properies presence if they are required or a value should be defaulted if missing
             bool trackPresence = (contract.HasRequiredOrDefaultValueProperties || HasFlag(Serializer._defaultValueHandling, DefaultValueHandling.Populate));
@@ -2097,7 +2079,7 @@ namespace Newtonsoft.Json.Serialization
                         contract,
                         reader.Depth,
                         context.Property,
-                        context.Presence.Value,
+                        context.Presence.GetValueOrDefault(),
                         !context.Used);
                 }
             }
@@ -2222,20 +2204,15 @@ namespace Newtonsoft.Json.Serialization
             switch (t)
             {
                 case ReadType.Read:
-                    do
-                    {
-                        if (!reader.Read())
-                        {
-                            return false;
-                        }
-                    } while (reader.TokenType == JsonToken.Comment);
-
-                    return true;
+                    return reader.ReadAndMoveToContent();
                 case ReadType.ReadAsInt32:
                     reader.ReadAsInt32();
                     break;
                 case ReadType.ReadAsDecimal:
                     reader.ReadAsDecimal();
+                    break;
+                case ReadType.ReadAsDouble:
+                    reader.ReadAsDouble();
                     break;
                 case ReadType.ReadAsBytes:
                     reader.ReadAsBytes();

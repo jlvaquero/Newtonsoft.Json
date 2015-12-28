@@ -318,7 +318,7 @@ namespace Newtonsoft.Json
         /// <param name="reader">The <see cref="JsonReader"/> to read from while validating.</param>
         public JsonValidatingReader(JsonReader reader)
         {
-            ValidationUtils.ArgumentNotNull(reader, "reader");
+            ValidationUtils.ArgumentNotNull(reader, nameof(reader));
             _reader = reader;
             _stack = new Stack<SchemaScope>();
         }
@@ -361,7 +361,7 @@ namespace Newtonsoft.Json
             JsonSchemaType? currentNodeType = GetCurrentNodeSchemaType();
             if (currentNodeType != null)
             {
-                if (JsonSchemaGenerator.HasFlag(schema.Disallow, currentNodeType.Value))
+                if (JsonSchemaGenerator.HasFlag(schema.Disallow, currentNodeType.GetValueOrDefault()))
                 {
                     RaiseError("Type {0} is disallowed.".FormatWith(CultureInfo.InvariantCulture, currentNodeType), schema);
                 }
@@ -424,6 +424,18 @@ namespace Newtonsoft.Json
         public override decimal? ReadAsDecimal()
         {
             decimal? d = _reader.ReadAsDecimal();
+
+            ValidateCurrentToken();
+            return d;
+        }
+
+        /// <summary>
+        /// Reads the next JSON token from the stream as a <see cref="Nullable{Double}"/>.
+        /// </summary>
+        /// <returns>A <see cref="Nullable{Double}"/>.</returns>
+        public override double? ReadAsDouble()
+        {
+            double? d = _reader.ReadAsDouble();
 
             ValidateCurrentToken();
             return d;
@@ -835,7 +847,7 @@ namespace Newtonsoft.Json
                 else
 #endif
                 {
-                    notDivisible = !IsZero(Convert.ToInt64(value, CultureInfo.InvariantCulture) % schema.DivisibleBy.Value);
+                    notDivisible = !IsZero(Convert.ToInt64(value, CultureInfo.InvariantCulture) % schema.DivisibleBy.GetValueOrDefault());
                 }
 
                 if (notDivisible)
@@ -907,7 +919,7 @@ namespace Newtonsoft.Json
 
             if (schema.DivisibleBy != null)
             {
-                double remainder = FloatingPointRemainder(value, schema.DivisibleBy.Value);
+                double remainder = FloatingPointRemainder(value, schema.DivisibleBy.GetValueOrDefault());
 
                 if (!IsZero(remainder))
                 {

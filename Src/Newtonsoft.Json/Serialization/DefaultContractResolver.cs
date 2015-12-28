@@ -236,7 +236,7 @@ namespace Newtonsoft.Json.Serialization
         {
             if (type == null)
             {
-                throw new ArgumentNullException("type");
+                throw new ArgumentNullException(nameof(type));
             }
 
             DefaultContractResolverState state = GetState();
@@ -582,7 +582,7 @@ namespace Newtonsoft.Json.Serialization
 
             public DictionaryEnumerator(IEnumerable<KeyValuePair<TEnumeratorKey, TEnumeratorValue>> e)
             {
-                ValidationUtils.ArgumentNotNull(e, "e");
+                ValidationUtils.ArgumentNotNull(e, nameof(e));
                 _e = e.GetEnumerator();
             }
 

@@ -118,6 +118,7 @@
     <Compile Include="Formatting.cs" />
     <Compile Include="GuidHandling.cs" />
     <Compile Include="IJsonBufferPool.cs" />
+    <Compile Include="IArrayPool.cs" />
     <Compile Include="JsonConstructorAttribute.cs" />
     <Compile Include="JsonDictionaryAttribute.cs" />
     <Compile Include="JsonException.cs" />

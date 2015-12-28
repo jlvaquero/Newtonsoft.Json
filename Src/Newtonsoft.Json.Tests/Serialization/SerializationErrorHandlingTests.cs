@@ -47,6 +47,7 @@ using Assert = Newtonsoft.Json.Tests.XUnitAssert;
 using NUnit.Framework;
 #endif
 using System.IO;
+using Newtonsoft.Json.Linq;
 using ErrorEventArgs = Newtonsoft.Json.Serialization.ErrorEventArgs;
 
 namespace Newtonsoft.Json.Tests.Serialization
@@ -522,7 +523,7 @@ namespace Newtonsoft.Json.Tests.Serialization
         }
 
         [Test]
-        public void InfiniteLoopArrayHandling()
+        public void ArrayHandling()
         {
             IList<string> errors = new List<string>();
 
@@ -538,16 +539,43 @@ namespace Newtonsoft.Json.Tests.Serialization
                     }
                 });
 
-            Assert.IsNull(o);
+            Assert.IsNotNull(o);
 
-            Assert.AreEqual(3, errors.Count);
-            Assert.AreEqual("Unexpected character encountered while parsing value: x. Path '[0]', line 1, position 3.", errors[0]);
-            Assert.AreEqual("Unexpected character encountered while parsing value: x. Path '[0]', line 1, position 3.", errors[1]);
-            Assert.AreEqual("Infinite loop detected from error handling. Path '[0]', line 1, position 3.", errors[2]);
+            Assert.AreEqual(1, errors.Count);
+            Assert.AreEqual("Unexpected character encountered while parsing value: x. Path '[0]', line 1, position 4.", errors[0]);
+
+            Assert.AreEqual(1, ((int[])o).Length);
+            Assert.AreEqual(0, ((int[])o)[0]);
         }
 
         [Test]
-        public void InfiniteLoopArrayHandlingInObject()
+        public void ArrayHandling_JTokenReader()
+        {
+            IList<string> errors = new List<string>();
+
+            JTokenReader reader = new JTokenReader(new JArray(0, true));
+
+            JsonSerializer serializer = JsonSerializer.Create(new JsonSerializerSettings
+            {
+                Error = (sender, arg) =>
+                {
+                    errors.Add(arg.ErrorContext.Error.Message);
+                    arg.ErrorContext.Handled = true;
+                }
+            });
+            object o = serializer.Deserialize(reader, typeof(int[]));
+
+            Assert.IsNotNull(o);
+
+            Assert.AreEqual(1, errors.Count);
+            Assert.AreEqual("Error reading integer. Unexpected token: Boolean. Path '[1]'.", errors[0]);
+
+            Assert.AreEqual(1, ((int[])o).Length);
+            Assert.AreEqual(0, ((int[])o)[0]);
+        }
+
+        [Test]
+        public void ArrayHandlingInObject()
         {
             IList<string> errors = new List<string>();
 
@@ -563,13 +591,16 @@ namespace Newtonsoft.Json.Tests.Serialization
                     }
                 });
 
-            Assert.IsNull(o);
+            Assert.IsNotNull(o);
 
-            Assert.AreEqual(4, errors.Count);
-            Assert.AreEqual("Unexpected character encountered while parsing value: x. Path 'badarray[0]', line 1, position 15.", errors[0]);
-            Assert.AreEqual("Unexpected character encountered while parsing value: x. Path 'badarray[0]', line 1, position 15.", errors[1]);
-            Assert.AreEqual("Infinite loop detected from error handling. Path 'badarray[0]', line 1, position 15.", errors[2]);
-            Assert.AreEqual("Unexpected character encountered while parsing value: x. Path 'badarray[0]', line 1, position 15.", errors[3]);
+            Assert.AreEqual(2, errors.Count);
+            Assert.AreEqual("Unexpected character encountered while parsing value: x. Path 'badarray[0]', line 1, position 16.", errors[0]);
+            Assert.AreEqual("Unexpected character encountered while parsing value: ,. Path 'badarray[1]', line 1, position 17.", errors[1]);
+
+            Assert.AreEqual(2, o.Count);
+            Assert.AreEqual(2, o["badarray"].Length);
+            Assert.AreEqual(0, o["badarray"][0]);
+            Assert.AreEqual(2, o["badarray"][1]);
         }
 
         [Test]

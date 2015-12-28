@@ -61,7 +61,7 @@ namespace Newtonsoft.Json.Serialization
         {
             if (jsonWriter == null)
             {
-                throw new ArgumentNullException("jsonWriter");
+                throw new ArgumentNullException(nameof(jsonWriter));
             }
 
             _rootType = objectType;
@@ -262,7 +262,7 @@ namespace Newtonsoft.Json.Serialization
                 }
             }
 
-            if (!isReference.Value)
+            if (!isReference.GetValueOrDefault())
             {
                 return false;
             }

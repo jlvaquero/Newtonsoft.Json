@@ -92,7 +92,7 @@ namespace Newtonsoft.Json
             {
                 if (value == null)
                 {
-                    throw new ArgumentNullException("value", "Reference resolver cannot be null.");
+                    throw new ArgumentNullException(nameof(value), "Reference resolver cannot be null.");
                 }
 
                 _referenceResolver = value;
@@ -109,7 +109,7 @@ namespace Newtonsoft.Json
             {
                 if (value == null)
                 {
-                    throw new ArgumentNullException("value", "Serialization binder cannot be null.");
+                    throw new ArgumentNullException(nameof(value), "Serialization binder cannot be null.");
                 }
 
                 _binder = value;
@@ -139,6 +139,11 @@ namespace Newtonsoft.Json
         /// <summary>
         /// Gets or sets how type name writing and reading is handled by the serializer.
         /// </summary>
+        /// <remarks>
+        /// <see cref="TypeNameHandling"/> should be used with caution when your application deserializes JSON from an external source.
+        /// Incoming types should be validated with a custom <see cref="T:System.Runtime.Serialization.SerializationBinder"/>
+        /// when deserializing with a value other than <c>TypeNameHandling.None</c>.
+        /// </remarks>
         public virtual TypeNameHandling TypeNameHandling
         {
             get { return _typeNameHandling; }
@@ -146,7 +151,7 @@ namespace Newtonsoft.Json
             {
                 if (value < TypeNameHandling.None || value > TypeNameHandling.Auto)
                 {
-                    throw new ArgumentOutOfRangeException("value");
+                    throw new ArgumentOutOfRangeException(nameof(value));
                 }
 
                 _typeNameHandling = value;
@@ -164,7 +169,7 @@ namespace Newtonsoft.Json
             {
                 if (value < FormatterAssemblyStyle.Simple || value > FormatterAssemblyStyle.Full)
                 {
-                    throw new ArgumentOutOfRangeException("value");
+                    throw new ArgumentOutOfRangeException(nameof(value));
                 }
 
                 _typeNameAssemblyFormat = value;
@@ -181,7 +186,7 @@ namespace Newtonsoft.Json
             {
                 if (value < PreserveReferencesHandling.None || value > PreserveReferencesHandling.All)
                 {
-                    throw new ArgumentOutOfRangeException("value");
+                    throw new ArgumentOutOfRangeException(nameof(value));
                 }
 
                 _preserveReferencesHandling = value;
@@ -198,7 +203,7 @@ namespace Newtonsoft.Json
             {
                 if (value < ReferenceLoopHandling.Error || value > ReferenceLoopHandling.Serialize)
                 {
-                    throw new ArgumentOutOfRangeException("value");
+                    throw new ArgumentOutOfRangeException(nameof(value));
                 }
 
                 _referenceLoopHandling = value;
@@ -215,7 +220,7 @@ namespace Newtonsoft.Json
             {
                 if (value < MissingMemberHandling.Ignore || value > MissingMemberHandling.Error)
                 {
-                    throw new ArgumentOutOfRangeException("value");
+                    throw new ArgumentOutOfRangeException(nameof(value));
                 }
 
                 _missingMemberHandling = value;
@@ -232,7 +237,7 @@ namespace Newtonsoft.Json
             {
                 if (value < NullValueHandling.Include || value > NullValueHandling.Ignore)
                 {
-                    throw new ArgumentOutOfRangeException("value");
+                    throw new ArgumentOutOfRangeException(nameof(value));
                 }
 
                 _nullValueHandling = value;
@@ -249,7 +254,7 @@ namespace Newtonsoft.Json
             {
                 if (value < DefaultValueHandling.Include || value > DefaultValueHandling.IgnoreAndPopulate)
                 {
-                    throw new ArgumentOutOfRangeException("value");
+                    throw new ArgumentOutOfRangeException(nameof(value));
                 }
 
                 _defaultValueHandling = value;
@@ -267,7 +272,7 @@ namespace Newtonsoft.Json
             {
                 if (value < ObjectCreationHandling.Auto || value > ObjectCreationHandling.Replace)
                 {
-                    throw new ArgumentOutOfRangeException("value");
+                    throw new ArgumentOutOfRangeException(nameof(value));
                 }
 
                 _objectCreationHandling = value;
@@ -285,7 +290,7 @@ namespace Newtonsoft.Json
             {
                 if (value < ConstructorHandling.Default || value > ConstructorHandling.AllowNonPublicDefaultConstructor)
                 {
-                    throw new ArgumentOutOfRangeException("value");
+                    throw new ArgumentOutOfRangeException(nameof(value));
                 }
 
                 _constructorHandling = value;
@@ -303,7 +308,7 @@ namespace Newtonsoft.Json
             {
                 if (value < MetadataPropertyHandling.Default || value > MetadataPropertyHandling.Ignore)
                 {
-                    throw new ArgumentOutOfRangeException("value");
+                    throw new ArgumentOutOfRangeException(nameof(value));
                 }
 
                 _metadataPropertyHandling = value;
@@ -444,7 +449,7 @@ namespace Newtonsoft.Json
             {
                 if (value <= 0)
                 {
-                    throw new ArgumentException("Value must be positive.", "value");
+                    throw new ArgumentException("Value must be positive.", nameof(value));
                 }
 
                 _maxDepth = value;
@@ -729,8 +734,8 @@ namespace Newtonsoft.Json
 
         internal virtual void PopulateInternal(JsonReader reader, object target)
         {
-            ValidationUtils.ArgumentNotNull(reader, "reader");
-            ValidationUtils.ArgumentNotNull(target, "target");
+            ValidationUtils.ArgumentNotNull(reader, nameof(reader));
+            ValidationUtils.ArgumentNotNull(target, nameof(target));
 
             // set serialization options onto reader
             CultureInfo previousCulture;
@@ -806,7 +811,7 @@ namespace Newtonsoft.Json
 
         internal virtual object DeserializeInternal(JsonReader reader, Type objectType)
         {
-            ValidationUtils.ArgumentNotNull(reader, "reader");
+            ValidationUtils.ArgumentNotNull(reader, nameof(reader));
 
             // set serialization options onto reader
             CultureInfo previousCulture;
@@ -851,7 +856,7 @@ namespace Newtonsoft.Json
             if (_dateTimeZoneHandling != null && reader.DateTimeZoneHandling != _dateTimeZoneHandling)
             {
                 previousDateTimeZoneHandling = reader.DateTimeZoneHandling;
-                reader.DateTimeZoneHandling = _dateTimeZoneHandling.Value;
+                reader.DateTimeZoneHandling = _dateTimeZoneHandling.GetValueOrDefault();
             }
             else
             {
@@ -861,7 +866,7 @@ namespace Newtonsoft.Json
             if (_dateParseHandling != null && reader.DateParseHandling != _dateParseHandling)
             {
                 previousDateParseHandling = reader.DateParseHandling;
-                reader.DateParseHandling = _dateParseHandling.Value;
+                reader.DateParseHandling = _dateParseHandling.GetValueOrDefault();
             }
             else
             {
@@ -871,7 +876,7 @@ namespace Newtonsoft.Json
             if (_floatParseHandling != null && reader.FloatParseHandling != _floatParseHandling)
             {
                 previousFloatParseHandling = reader.FloatParseHandling;
-                reader.FloatParseHandling = _floatParseHandling.Value;
+                reader.FloatParseHandling = _floatParseHandling.GetValueOrDefault();
             }
             else
             {
@@ -928,15 +933,15 @@ namespace Newtonsoft.Json
             }
             if (previousDateTimeZoneHandling != null)
             {
-                reader.DateTimeZoneHandling = previousDateTimeZoneHandling.Value;
+                reader.DateTimeZoneHandling = previousDateTimeZoneHandling.GetValueOrDefault();
             }
             if (previousDateParseHandling != null)
             {
-                reader.DateParseHandling = previousDateParseHandling.Value;
+                reader.DateParseHandling = previousDateParseHandling.GetValueOrDefault();
             }
             if (previousFloatParseHandling != null)
             {
-                reader.FloatParseHandling = previousFloatParseHandling.Value;
+                reader.FloatParseHandling = previousFloatParseHandling.GetValueOrDefault();
             }
             if (_maxDepthSet)
             {
@@ -1010,42 +1015,42 @@ namespace Newtonsoft.Json
 
         internal virtual void SerializeInternal(JsonWriter jsonWriter, object value, Type objectType)
         {
-            ValidationUtils.ArgumentNotNull(jsonWriter, "jsonWriter");
+            ValidationUtils.ArgumentNotNull(jsonWriter, nameof(jsonWriter));
 
             // set serialization options onto writer
             Formatting? previousFormatting = null;
             if (_formatting != null && jsonWriter.Formatting != _formatting)
             {
                 previousFormatting = jsonWriter.Formatting;
-                jsonWriter.Formatting = _formatting.Value;
+                jsonWriter.Formatting = _formatting.GetValueOrDefault();
             }
 
             DateFormatHandling? previousDateFormatHandling = null;
             if (_dateFormatHandling != null && jsonWriter.DateFormatHandling != _dateFormatHandling)
             {
                 previousDateFormatHandling = jsonWriter.DateFormatHandling;
-                jsonWriter.DateFormatHandling = _dateFormatHandling.Value;
+                jsonWriter.DateFormatHandling = _dateFormatHandling.GetValueOrDefault();
             }
 
             DateTimeZoneHandling? previousDateTimeZoneHandling = null;
             if (_dateTimeZoneHandling != null && jsonWriter.DateTimeZoneHandling != _dateTimeZoneHandling)
             {
                 previousDateTimeZoneHandling = jsonWriter.DateTimeZoneHandling;
-                jsonWriter.DateTimeZoneHandling = _dateTimeZoneHandling.Value;
+                jsonWriter.DateTimeZoneHandling = _dateTimeZoneHandling.GetValueOrDefault();
             }
 
             FloatFormatHandling? previousFloatFormatHandling = null;
             if (_floatFormatHandling != null && jsonWriter.FloatFormatHandling != _floatFormatHandling)
             {
                 previousFloatFormatHandling = jsonWriter.FloatFormatHandling;
-                jsonWriter.FloatFormatHandling = _floatFormatHandling.Value;
+                jsonWriter.FloatFormatHandling = _floatFormatHandling.GetValueOrDefault();
             }
 
             StringEscapeHandling? previousStringEscapeHandling = null;
             if (_stringEscapeHandling != null && jsonWriter.StringEscapeHandling != _stringEscapeHandling)
             {
                 previousStringEscapeHandling = jsonWriter.StringEscapeHandling;
-                jsonWriter.StringEscapeHandling = _stringEscapeHandling.Value;
+                jsonWriter.StringEscapeHandling = _stringEscapeHandling.GetValueOrDefault();
             }
 
             CultureInfo previousCulture = null;
@@ -1084,23 +1089,23 @@ namespace Newtonsoft.Json
             // reset writer back to previous options
             if (previousFormatting != null)
             {
-                jsonWriter.Formatting = previousFormatting.Value;
+                jsonWriter.Formatting = previousFormatting.GetValueOrDefault();
             }
             if (previousDateFormatHandling != null)
             {
-                jsonWriter.DateFormatHandling = previousDateFormatHandling.Value;
+                jsonWriter.DateFormatHandling = previousDateFormatHandling.GetValueOrDefault();
             }
             if (previousDateTimeZoneHandling != null)
             {
-                jsonWriter.DateTimeZoneHandling = previousDateTimeZoneHandling.Value;
+                jsonWriter.DateTimeZoneHandling = previousDateTimeZoneHandling.GetValueOrDefault();
             }
             if (previousFloatFormatHandling != null)
             {
-                jsonWriter.FloatFormatHandling = previousFloatFormatHandling.Value;
+                jsonWriter.FloatFormatHandling = previousFloatFormatHandling.GetValueOrDefault();
             }
             if (previousStringEscapeHandling != null)
             {
-                jsonWriter.StringEscapeHandling = previousStringEscapeHandling.Value;
+                jsonWriter.StringEscapeHandling = previousStringEscapeHandling.GetValueOrDefault();
             }
             if (_dateFormatStringSet)
             {
@@ -1134,7 +1139,7 @@ namespace Newtonsoft.Json
         internal static JsonConverter GetMatchingConverter(IList<JsonConverter> converters, Type objectType)
         {
 #if DEBUG
-            ValidationUtils.ArgumentNotNull(objectType, "objectType");
+            ValidationUtils.ArgumentNotNull(objectType, nameof(objectType));
 #endif
 
             if (converters != null)
