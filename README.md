@@ -8,7 +8,7 @@
 - [License](LICENSE.md)
 - [Stack Overflow](http://stackoverflow.com/questions/tagged/json.net)
 
-GUID Handling added from .NET 4.0 onwards (working in previous .NET versions). Currently when you serilize a GUID in a Object Array and deserialize it; the GUID become a plain String instance even with full TypeNameHandling.
+GUID Handling added from .NET 4.0 onwards (I´m also working to add previous .NET versions). Currently, in some scenarios( i.e. when you serilize a GUID in a Object Array and deserialize it), the GUID become a plain String instance even with full TypeNameHandling.
 
 ```c#
 public class Clase
@@ -46,7 +46,7 @@ A new setting was added to JsonSerializerSettings. This setting allows you to co
  public enum GuidHandling
     {
         /// <summary>
-        /// Default Newtonsoft.Json handling. Gives you a String on deserilize.
+        /// Default Newtonsoft.Json handling. Gives you a String on deserilize in some scenarios.
         /// </summary>
         Default = 0,
 
@@ -83,7 +83,7 @@ A new setting was added to JsonSerializerSettings. This setting allows you to co
 ```
 Examples:
 
-Original Newtonsoft.Json serialization:
+Current Newtonsoft.Json serialization behaviour:
 ```c#
         output = JsonConvert.SerializeObject(clase, Formatting.Indented, new JsonSerializerSettings
         {
@@ -104,7 +104,7 @@ Original Newtonsoft.Json serialization:
 
         });
 ```
-Customize Guid Serialization format:
+With customize Guid Serialization format provided in this fork:
 
 ```c#
  output = JsonConvert.SerializeObject(clase, Formatting.Indented, new JsonSerializerSettings
@@ -115,7 +115,7 @@ Customize Guid Serialization format:
         });
 ```
 
-Original Newtonsoft.Json deserialization:
+Current Newtonsoft.Json deserialization behaviour:
 
 ```c#
   Clase deserializedr = JsonConvert.DeserializeObject<Clase>(output, new JsonSerializerSettings
@@ -133,7 +133,7 @@ Original Newtonsoft.Json deserialization:
                                 });
   Console.WriteLine(deserializedr.Propiedad[0].GetType()); //String!
 ```
-GuidHandling deserialization:
+With GuidHandling deserialization behaviour:
 ```c#
   Clase deserializedr = JsonConvert.DeserializeObject<Clase>(output, new JsonSerializerSettings
                                 {
