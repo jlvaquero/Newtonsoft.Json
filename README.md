@@ -8,7 +8,7 @@
 - [License](LICENSE.md)
 - [Stack Overflow](http://stackoverflow.com/questions/tagged/json.net)
 
-- This form improve GUID Handling from .NET 4.0 onwards (woking in progress in pre TryCast .NET versions).
+- This fork improve GUID Handling from .NET 4.0 onwards (woking in progress in pre TryCast .NET versions).
 - Support deserilizing GUID from base class. Now return a GUID instead a string because in some scenarios( i.e. when you seriliaze a GUID from a Object Array and deserialize it), the GUID become a plain String instance even with full TypeNameHandling.
 - Support serialize and deserialize  into/from all .NET GUID formats. Useful if you have to deserialize a 3rd party JSON with different GUID format or you have to generate the JSON and send it to 3rd party service that needs different GUID format.
 - Auto format. Useful for deserialize from several JSON with various GUID formats without coding it explicitly.
