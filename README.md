@@ -8,8 +8,13 @@
 - [License](LICENSE.md)
 - [Stack Overflow](http://stackoverflow.com/questions/tagged/json.net)
 
-GUID Handling added from .NET 4.0 onwards (I´m also working to add previous .NET versions). Currently, in some scenarios( i.e. when you serilize a GUID in a Object Array and deserialize it), the GUID become a plain String instance even with full TypeNameHandling.
+- This fork improves GUID Handling from .NET 4.0 onwards (woking in progress in pre TryCast .NET versions).
+- Support deserialize GUID from base class. Now return a GUID instead a string because in some scenarios( i.e. when you seriliaze a GUID from a Object Array and deserialize it), the GUID become a plain String instance even with full TypeNameHandling.
+- Support serialize and deserialize  into/from all .NET GUID formats. Useful if you have to deserialize a 3rd party JSON with different GUID format or you have to generate the JSON and send it to 3rd party service that needs different GUID format.
+- Auto format. Useful for deserialize from several JSON with various GUID formats without coding it explicitly.
+- No breaking changes. Let default behaviour work as allways does.
 
+Example of deserialize GUID to object problem:
 ```c#
 public class Clase
 {
@@ -76,64 +81,47 @@ A new setting was added to JsonSerializerSettings. This setting allows you to co
         Hexadecimal = 5,
 
         /// <summary>
-        /// Default on serialize. Parse any valid format on deserialize and gives you GUID instance instead String.
+        /// Default format on serialize. Parse any valid format on deserialize and gives you GUID instance instead String.
         /// </summary>
         Auto = 6
     }
 ```
 Examples:
 
-Current Newtonsoft.Json serialization behaviour:
+Default Newtonsoft.Json serialization behaviour with this fork:
 ```c#
-        output = JsonConvert.SerializeObject(clase, Formatting.Indented, new JsonSerializerSettings
-        {
-            GuidHandling = GuidHandling.Default,
-            TypeNameHandling = TypeNameHandling.All
-
-        });
-        output = JsonConvert.SerializeObject(clase, Formatting.Indented, new JsonSerializerSettings
-        {
-            GuidHandling = GuidHandling.Auto,
-            TypeNameHandling = TypeNameHandling.All
-
-        });
-        output = JsonConvert.SerializeObject(clase, Formatting.Indented, new JsonSerializerSettings
+       output = JsonConvert.SerializeObject(clase, Formatting.Indented, new JsonSerializerSettings
         {   
             //ignore GuidHandling for default behaviour. No breaking changes!
             TypeNameHandling = TypeNameHandling.All
 
         });
+        output = JsonConvert.SerializeObject(clase, Formatting.Indented, new JsonSerializerSettings
+        {
+            GuidHandling = GuidHandling.Default, //same as above
+            TypeNameHandling = TypeNameHandling.All
+
+        });
+        output = JsonConvert.SerializeObject(clase, Formatting.Indented, new JsonSerializerSettings
+        {
+            GuidHandling = GuidHandling.Auto, //no breaking changes in format but deserialize to GUID instead plain string
+            TypeNameHandling = TypeNameHandling.All
+
+        });
+ 
 ```
-With customize Guid Serialization format provided in this fork:
+With custom Guid Serialization format provided in this fork:
 
 ```c#
  output = JsonConvert.SerializeObject(clase, Formatting.Indented, new JsonSerializerSettings
         {
-            GuidHandling = GuidHandling.Hexadecimal, // {0x00000000,0x0000,0x0000,{0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00}} format in JSON
+            GuidHandling = GuidHandling.Hexadecimal, // {0x00000000,0x0000,0x0000,{0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00}} format in JSON output
             TypeNameHandling = TypeNameHandling.All
 
         });
 ```
 
-Current Newtonsoft.Json deserialization behaviour:
-
-```c#
-  Clase deserializedr = JsonConvert.DeserializeObject<Clase>(output, new JsonSerializerSettings
-                                {
-                                    // //ignore GuidHandling for default behaviour. No breaking changes!
-                                    TypeNameHandling = TypeNameHandling.All
-                                });
-
-  Console.WriteLine(deserializedr.Propiedad[0].GetType()); //String!
-        
-  Clase deserializedr = JsonConvert.DeserializeObject<Clase>(output, new JsonSerializerSettings
-                                {
-                                    GuidHandling = GuidHandling.Default,
-                                    TypeNameHandling = TypeNameHandling.All
-                                });
-  Console.WriteLine(deserializedr.Propiedad[0].GetType()); //String!
-```
-With GuidHandling deserialization behaviour:
+With custom Guid deserialization format provided in this fork:
 ```c#
   Clase deserializedr = JsonConvert.DeserializeObject<Clase>(output, new JsonSerializerSettings
                                 {
@@ -144,7 +132,7 @@ With GuidHandling deserialization behaviour:
   
   Clase deserializedr = JsonConvert.DeserializeObject<Clase>(output, new JsonSerializerSettings
                                 {
-                                    GuidHandling = GuidHandling.Hexadecimal, //faster than Auto; throws exception if JSON does not meet hexadecial format
+                                    GuidHandling = GuidHandling.Hexadecimal, //faster than Auto but throws exception if JSON does not meet hexadecial format
                                     TypeNameHandling = TypeNameHandling.All
                                 });
   Console.WriteLine(deserializedr.Propiedad[0].GetType()); //Guid! 
