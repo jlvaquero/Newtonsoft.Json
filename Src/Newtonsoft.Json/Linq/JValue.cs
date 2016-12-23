@@ -31,7 +31,7 @@ using System.Globalization;
 using System.Dynamic;
 using System.Linq.Expressions;
 #endif
-#if !(NET20 || NET35 || PORTABLE40 || PORTABLE)
+#if !(NET20 || NET35 || PORTABLE40 || PORTABLE) || NETSTANDARD1_1
 using System.Numerics;
 
 #endif
@@ -219,7 +219,7 @@ namespace Newtonsoft.Json.Linq
             get { return false; }
         }
 
-#if !(NET20 || NET35 || PORTABLE40 || PORTABLE)
+#if !(NET20 || NET35 || PORTABLE40 || PORTABLE) || NETSTANDARD1_1
         private static int CompareBigInteger(BigInteger i1, object i2)
         {
             int result = i1.CompareTo(ConvertUtils.ToBigInteger(i2));
@@ -264,7 +264,7 @@ namespace Newtonsoft.Json.Linq
             switch (valueType)
             {
                 case JTokenType.Integer:
-#if !(NET20 || NET35 || PORTABLE40 || PORTABLE)
+#if !(NET20 || NET35 || PORTABLE40 || PORTABLE) || NETSTANDARD1_1
                     if (objA is BigInteger)
                     {
                         return CompareBigInteger((BigInteger)objA, objB);
@@ -287,7 +287,7 @@ namespace Newtonsoft.Json.Linq
                         return Convert.ToInt64(objA, CultureInfo.InvariantCulture).CompareTo(Convert.ToInt64(objB, CultureInfo.InvariantCulture));
                     }
                 case JTokenType.Float:
-#if !(NET20 || NET35 || PORTABLE40 || PORTABLE)
+#if !(NET20 || NET35 || PORTABLE40 || PORTABLE) || NETSTANDARD1_1
                     if (objA is BigInteger)
                     {
                         return CompareBigInteger((BigInteger)objA, objB);
@@ -428,7 +428,7 @@ namespace Newtonsoft.Json.Linq
                 }
             }
 
-#if !(NET20 || NET35 || PORTABLE40 || PORTABLE)
+#if !(NET20 || NET35 || PORTABLE40 || PORTABLE) || NETSTANDARD1_1
             if (objA is BigInteger || objB is BigInteger)
             {
                 if (objA == null || objB == null)
@@ -632,7 +632,7 @@ namespace Newtonsoft.Json.Linq
             {
                 return JTokenType.Integer;
             }
-#if !(NET20 || NET35 || PORTABLE40 || PORTABLE)
+#if !(NET20 || NET35 || PORTABLE40 || PORTABLE) || NETSTANDARD1_1
             else if (value is BigInteger)
             {
                 return JTokenType.Integer;
@@ -768,7 +768,7 @@ namespace Newtonsoft.Json.Linq
                     {
                         writer.WriteValue((ulong)_value);
                     }
-#if !(NET20 || NET35 || PORTABLE40 || PORTABLE)
+#if !(NET20 || NET35 || PORTABLE40 || PORTABLE) || NETSTANDARD1_1
                     else if (_value is BigInteger)
                     {
                         writer.WriteValue((BigInteger)_value);
@@ -849,7 +849,7 @@ namespace Newtonsoft.Json.Linq
         /// Indicates whether the current object is equal to another object of the same type.
         /// </summary>
         /// <returns>
-        /// true if the current object is equal to the <paramref name="other"/> parameter; otherwise, false.
+        /// <c>true</c> if the current object is equal to the <paramref name="other"/> parameter; otherwise, <c>false</c>.
         /// </returns>
         /// <param name="other">An object to compare with this object.</param>
         public bool Equals(JValue other)
@@ -867,11 +867,8 @@ namespace Newtonsoft.Json.Linq
         /// </summary>
         /// <param name="obj">The <see cref="T:System.Object"/> to compare with the current <see cref="T:System.Object"/>.</param>
         /// <returns>
-        /// true if the specified <see cref="T:System.Object"/> is equal to the current <see cref="T:System.Object"/>; otherwise, false.
+        /// <c>true</c> if the specified <see cref="T:System.Object"/> is equal to the current <see cref="T:System.Object"/>; otherwise, <c>false</c>.
         /// </returns>
-        /// <exception cref="T:System.NullReferenceException">
-        /// The <paramref name="obj"/> parameter is null.
-        /// </exception>
         public override bool Equals(object obj)
         {
             if (obj == null)
@@ -1079,7 +1076,7 @@ namespace Newtonsoft.Json.Linq
         /// This instance is greater than <paramref name="obj"/>.
         /// </returns>
         /// <exception cref="T:System.ArgumentException">
-        /// 	<paramref name="obj"/> is not the same type as this instance.
+        /// 	<paramref name="obj"/> is not of the same type as this instance.
         /// </exception>
         public int CompareTo(JValue obj)
         {

@@ -29,11 +29,7 @@ using System.Linq;
 using System;
 using System.Diagnostics;
 using System.Reflection;
-#if NETFX_CORE
-using Microsoft.VisualStudio.TestPlatform.UnitTestFramework;
-using TestFixture = Microsoft.VisualStudio.TestPlatform.UnitTestFramework.TestClassAttribute;
-using Test = Microsoft.VisualStudio.TestPlatform.UnitTestFramework.TestMethodAttribute;
-#elif DNXCORE50
+#if DNXCORE50
 using Xunit;
 using Test = Xunit.FactAttribute;
 using Assert = Newtonsoft.Json.Tests.XUnitAssert;
@@ -43,6 +39,7 @@ using NUnit.Framework;
 using Newtonsoft.Json.Serialization;
 using Newtonsoft.Json.Utilities;
 using Newtonsoft.Json.Tests.TestObjects;
+using Newtonsoft.Json.Tests.TestObjects.Organization;
 using Newtonsoft.Json.Tests.Serialization;
 
 namespace Newtonsoft.Json.Tests.Utilities
@@ -298,7 +295,7 @@ namespace Newtonsoft.Json.Tests.Utilities
                 },
                 new[]
                 {
-                    "Unable to cast object of type 'Newtonsoft.Json.Tests.TestObjects.Person' to type 'Newtonsoft.Json.Tests.TestObjects.Movie'.",
+                    "Unable to cast object of type 'Newtonsoft.Json.Tests.TestObjects.Organization.Person' to type 'Newtonsoft.Json.Tests.TestObjects.Movie'.",
                     "Cannot cast from source type to destination type." // mono
                 });
         }
@@ -324,7 +321,7 @@ namespace Newtonsoft.Json.Tests.Utilities
                 },
                 new[]
                 {
-                    "Unable to cast object of type 'Newtonsoft.Json.Tests.TestObjects.Person' to type 'Newtonsoft.Json.Tests.TestObjects.Movie'.",
+                    "Unable to cast object of type 'Newtonsoft.Json.Tests.TestObjects.Organization.Person' to type 'Newtonsoft.Json.Tests.TestObjects.Movie'.",
                     "Cannot cast from source type to destination type." // mono
                 });
         }
@@ -361,6 +358,49 @@ namespace Newtonsoft.Json.Tests.Utilities
 
             JsonSerializerTest.DictionaryKey key = (JsonSerializerTest.DictionaryKey)result;
             Assert.AreEqual("First!", key.Value);
+        }
+
+        [Test]
+        public void ConstructorStruct()
+        {
+            Func<object> creator1 = ExpressionReflectionDelegateFactory.Instance.CreateDefaultConstructor<object>(typeof(MyStruct));
+            MyStruct myStruct1 = (MyStruct)creator1.Invoke();
+            Assert.AreEqual(0, myStruct1.IntProperty);
+
+            Func<MyStruct> creator2 = ExpressionReflectionDelegateFactory.Instance.CreateDefaultConstructor<MyStruct>(typeof(MyStruct));
+            MyStruct myStruct2 = creator2.Invoke();
+            Assert.AreEqual(0, myStruct2.IntProperty);
+        }
+
+        public struct TestStruct
+        {
+            public TestStruct(int i)
+            {
+                Value = i;
+            }
+
+            public int Value { get; }
+        }
+
+        public static TestStruct StructMethod(TestStruct s)
+        {
+            return new TestStruct(s.Value + s.Value);
+        }
+
+        [Test]
+        public void CreateStructMethodCall()
+        {
+            MethodInfo methodInfo = typeof(ExpressionReflectionDelegateFactoryTests).GetMethod(nameof(StructMethod), new[] { typeof(TestStruct) });
+
+            Assert.IsNotNull(methodInfo);
+
+            MethodCall<object, object> call = ExpressionReflectionDelegateFactory.Instance.CreateMethodCall<object>(methodInfo);
+
+            object result = call(null, new TestStruct(123));
+            Assert.IsNotNull(result);
+
+            TestStruct s = (TestStruct)result;
+            Assert.AreEqual(246, s.Value);
         }
     }
 }

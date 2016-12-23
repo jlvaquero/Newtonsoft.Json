@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
-#if !(NET20 || NET35 || PORTABLE || PORTABLE40)
+#if !(NET20 || NET35 || PORTABLE || PORTABLE40) || NETSTANDARD1_1
 using System.Numerics;
 #endif
 using System.Text;
@@ -52,13 +52,6 @@ namespace Newtonsoft.Json.Serialization
         }
 
         public override void WriteValue(byte value)
-        {
-            _textWriter.WriteValue(value);
-            _innerWriter.WriteValue(value);
-            base.WriteValue(value);
-        }
-
-        public override void WriteValue(byte? value)
         {
             _textWriter.WriteValue(value);
             _innerWriter.WriteValue(value);
@@ -146,7 +139,7 @@ namespace Newtonsoft.Json.Serialization
 
         public override void WriteValue(object value)
         {
-#if !(NET20 || NET35 || PORTABLE || PORTABLE40)
+#if !(NET20 || NET35 || PORTABLE || PORTABLE40) || NETSTANDARD1_1
             if (value is BigInteger)
             {
                 _textWriter.WriteValue(value);

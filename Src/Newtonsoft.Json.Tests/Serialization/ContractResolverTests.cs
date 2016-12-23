@@ -28,11 +28,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Runtime.Serialization;
-#if NETFX_CORE
-using Microsoft.VisualStudio.TestPlatform.UnitTestFramework;
-using TestFixture = Microsoft.VisualStudio.TestPlatform.UnitTestFramework.TestClassAttribute;
-using Test = Microsoft.VisualStudio.TestPlatform.UnitTestFramework.TestMethodAttribute;
-#elif DNXCORE50
+#if DNXCORE50
 using Xunit;
 using Test = Xunit.FactAttribute;
 using Assert = Newtonsoft.Json.Tests.XUnitAssert;
@@ -46,6 +42,7 @@ using System.Linq;
 #endif
 using Newtonsoft.Json.Serialization;
 using Newtonsoft.Json.Tests.TestObjects;
+using Newtonsoft.Json.Tests.TestObjects.Organization;
 using System.Reflection;
 using Newtonsoft.Json.Utilities;
 using System.Globalization;
@@ -441,12 +438,12 @@ namespace Newtonsoft.Json.Tests.Serialization
         public void ParameterizedCreator()
         {
             var resolver = new DefaultContractResolver();
-            var contract = (JsonObjectContract)resolver.ResolveContract(typeof(PublicParametizedConstructorWithPropertyNameConflictWithAttribute));
+            var contract = (JsonObjectContract)resolver.ResolveContract(typeof(PublicParameterizedConstructorWithPropertyNameConflictWithAttribute));
 
             Assert.IsNull(contract.DefaultCreator);
             Assert.IsNotNull(contract.ParameterizedCreator);
 #pragma warning disable 618
-            Assert.AreEqual(contract.ParametrizedConstructor, typeof(PublicParametizedConstructorWithPropertyNameConflictWithAttribute).GetConstructor(new[] { typeof(string) }));
+            Assert.AreEqual(contract.ParametrizedConstructor, typeof(PublicParameterizedConstructorWithPropertyNameConflictWithAttribute).GetConstructor(new[] { typeof(string) }));
 #pragma warning restore 618
             Assert.AreEqual(1, contract.CreatorParameters.Count);
             Assert.AreEqual("name", contract.CreatorParameters[0].PropertyName);
@@ -461,12 +458,12 @@ namespace Newtonsoft.Json.Tests.Serialization
         public void OverrideCreator()
         {
             var resolver = new DefaultContractResolver();
-            var contract = (JsonObjectContract)resolver.ResolveContract(typeof(MultipleParamatrizedConstructorsJsonConstructor));
+            var contract = (JsonObjectContract)resolver.ResolveContract(typeof(MultipleParametrizedConstructorsJsonConstructor));
 
             Assert.IsNull(contract.DefaultCreator);
             Assert.IsNotNull(contract.OverrideCreator);
 #pragma warning disable 618
-            Assert.AreEqual(contract.OverrideConstructor, typeof(MultipleParamatrizedConstructorsJsonConstructor).GetConstructor(new[] { typeof(string), typeof(int) }));
+            Assert.AreEqual(contract.OverrideConstructor, typeof(MultipleParametrizedConstructorsJsonConstructor).GetConstructor(new[] { typeof(string), typeof(int) }));
 #pragma warning restore 618
             Assert.AreEqual(2, contract.CreatorParameters.Count);
             Assert.AreEqual("Value", contract.CreatorParameters[0].PropertyName);
@@ -482,20 +479,20 @@ namespace Newtonsoft.Json.Tests.Serialization
         public void CustomOverrideCreator()
         {
             var resolver = new DefaultContractResolver();
-            var contract = (JsonObjectContract)resolver.ResolveContract(typeof(MultipleParamatrizedConstructorsJsonConstructor));
+            var contract = (JsonObjectContract)resolver.ResolveContract(typeof(MultipleParametrizedConstructorsJsonConstructor));
 
             bool ensureCustomCreatorCalled = false;
 
             contract.OverrideCreator = args =>
             {
                 ensureCustomCreatorCalled = true;
-                return new MultipleParamatrizedConstructorsJsonConstructor((string)args[0], (int)args[1]);
+                return new MultipleParametrizedConstructorsJsonConstructor((string)args[0], (int)args[1]);
             };
 #pragma warning disable 618
             Assert.IsNull(contract.OverrideConstructor);
 #pragma warning restore 618
 
-            var o = JsonConvert.DeserializeObject<MultipleParamatrizedConstructorsJsonConstructor>("{Value:'value!', Age:1}", new JsonSerializerSettings
+            var o = JsonConvert.DeserializeObject<MultipleParametrizedConstructorsJsonConstructor>("{Value:'value!', Age:1}", new JsonSerializerSettings
             {
                 ContractResolver = resolver
             });
@@ -568,7 +565,7 @@ namespace Newtonsoft.Json.Tests.Serialization
 }", startingWithB);
         }
 
-#if !(NETFX_CORE || PORTABLE || PORTABLE40)
+#if !(PORTABLE || PORTABLE40)
 #pragma warning disable 618
         [Test]
         public void SerializeCompilerGeneratedMembers()

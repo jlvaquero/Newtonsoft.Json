@@ -29,12 +29,11 @@ using System.IO;
 using System.Runtime.Serialization.Formatters;
 using System.Text;
 using Newtonsoft.Json.Linq;
+using Newtonsoft.Json.Serialization;
 using Newtonsoft.Json.Tests.TestObjects;
-#if NETFX_CORE
-using Microsoft.VisualStudio.TestPlatform.UnitTestFramework;
-using TestFixture = Microsoft.VisualStudio.TestPlatform.UnitTestFramework.TestClassAttribute;
-using Test = Microsoft.VisualStudio.TestPlatform.UnitTestFramework.TestMethodAttribute;
-#elif DNXCORE50
+using Newtonsoft.Json.Tests.TestObjects.Organization;
+using Newtonsoft.Json.Utilities;
+#if DNXCORE50
 using Xunit;
 using Test = Xunit.FactAttribute;
 using Assert = Newtonsoft.Json.Tests.XUnitAssert;
@@ -116,7 +115,7 @@ namespace Newtonsoft.Json.Tests.Serialization
   ""$type"": ""Newtonsoft.Json.Tests.Serialization.PreserveReferencesHandlingTests+Container, Newtonsoft.Json.Tests"",
   ""ListA"": {
     ""$id"": ""2"",
-    ""$type"": ""System.Collections.Generic.List`1[[Newtonsoft.Json.Tests.Serialization.PreserveReferencesHandlingTests+ContentA, Newtonsoft.Json.Tests]], mscorlib"",
+    ""$type"": """ + ReflectionUtils.GetTypeName(typeof(List<ContentA>), 0, DefaultSerializationBinder.Instance) + @""",
     ""$values"": [
       {
         ""$id"": ""3"",
@@ -127,7 +126,7 @@ namespace Newtonsoft.Json.Tests.Serialization
   },
   ""ListB"": {
     ""$id"": ""4"",
-    ""$type"": ""System.Collections.Generic.List`1[[Newtonsoft.Json.Tests.Serialization.PreserveReferencesHandlingTests+ContentA, Newtonsoft.Json.Tests]], mscorlib"",
+    ""$type"": """ + ReflectionUtils.GetTypeName(typeof(List<ContentA>), 0, DefaultSerializationBinder.Instance) + @""",
     ""$values"": [
       {
         ""$ref"": ""3""
@@ -655,6 +654,66 @@ namespace Newtonsoft.Json.Tests.Serialization
             Assert.AreEqual("Mike Manager", employees[0].Name);
             Assert.AreEqual("Joe User", employees[1].Name);
             Assert.AreEqual(employees[0], employees[1].Manager);
+        }
+
+        [JsonObject(IsReference = true)]
+        private class Condition
+        {
+            public int Value { get; }
+
+            public Condition(int value)
+            {
+                Value = value;
+            }
+        }
+
+        private class ClassWithConditions
+        {
+            public Condition Condition1 { get; }
+
+            public Condition Condition2 { get; }
+
+            public ClassWithConditions(Condition condition1, Condition condition2)
+            {
+                Condition1 = condition1;
+                Condition2 = condition2;
+            }
+        }
+
+        [Test]
+        public void SerializeIsReferenceReadonlyProperty()
+        {
+            Condition condition = new Condition(1);
+            ClassWithConditions value = new ClassWithConditions(condition, condition);
+
+            string json = JsonConvert.SerializeObject(value, Formatting.Indented);
+            StringAssert.AreEqual(@"{
+  ""Condition1"": {
+    ""$id"": ""1"",
+    ""Value"": 1
+  },
+  ""Condition2"": {
+    ""$ref"": ""1""
+  }
+}", json);
+        }
+
+        [Test]
+        public void DeserializeIsReferenceReadonlyProperty()
+        {
+            string json = @"{
+  ""Condition1"": {
+    ""$id"": ""1"",
+    ""Value"": 1
+  },
+  ""Condition2"": {
+    ""$ref"": ""1""
+  }
+}";
+
+            ClassWithConditions value = JsonConvert.DeserializeObject<ClassWithConditions>(json);
+            Assert.AreEqual(value.Condition1.Value, 1);
+            Assert.AreEqual(value.Condition1, value.Condition2);
         }
 
         [Test]

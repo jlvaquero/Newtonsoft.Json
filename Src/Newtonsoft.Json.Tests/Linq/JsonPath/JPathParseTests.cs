@@ -26,11 +26,7 @@
 using System;
 using System.Collections.Generic;
 using Newtonsoft.Json.Linq.JsonPath;
-#if NETFX_CORE
-using Microsoft.VisualStudio.TestPlatform.UnitTestFramework;
-using TestFixture = Microsoft.VisualStudio.TestPlatform.UnitTestFramework.TestClassAttribute;
-using Test = Microsoft.VisualStudio.TestPlatform.UnitTestFramework.TestMethodAttribute;
-#elif DNXCORE50
+#if DNXCORE50
 using Xunit;
 using Test = Xunit.FactAttribute;
 using Assert = Newtonsoft.Json.Tests.XUnitAssert;
@@ -417,6 +413,16 @@ namespace Newtonsoft.Json.Tests.Linq.JsonPath
             Assert.AreEqual(QueryOperator.Exists, orExpression.Expressions[0].Operator);
             Assert.AreEqual("pie", ((FieldFilter)((BooleanQueryExpression)orExpression.Expressions[1]).Path[0]).Name);
             Assert.AreEqual(QueryOperator.Exists, orExpression.Expressions[1].Operator);
+        }
+
+        [Test]
+        public void FilterWithRoot()
+        {
+            JPath path = new JPath("[?($.name>=12.1)]");
+            BooleanQueryExpression expressions = (BooleanQueryExpression)((QueryFilter)path.Filters[0]).Expression;
+            Assert.AreEqual(2, expressions.Path.Count);
+            Assert.IsInstanceOf(typeof(RootFilter), expressions.Path[0]);
+            Assert.IsInstanceOf(typeof(FieldFilter), expressions.Path[1]);
         }
 
         [Test]

@@ -33,7 +33,7 @@ using System.Dynamic;
 #endif
 using System.Diagnostics;
 using System.Globalization;
-#if !(PORTABLE || PORTABLE40 || NET35 || NET20)
+#if !(PORTABLE || PORTABLE40 || NET35 || NET20) || NETSTANDARD1_1
 using System.Numerics;
 #endif
 using System.Reflection;
@@ -779,14 +779,12 @@ namespace Newtonsoft.Json.Serialization
 
             if (resolvedTypeNameHandling != TypeNameHandling.None)
             {
-                string typeName;
-                string assemblyName;
-                ReflectionUtils.SplitFullyQualifiedTypeName(qualifiedTypeName, out typeName, out assemblyName);
+                TypeNameKey typeNameKey = ReflectionUtils.SplitFullyQualifiedTypeName(qualifiedTypeName);
 
                 Type specifiedType;
                 try
                 {
-                    specifiedType = Serializer._binder.BindToType(assemblyName, typeName);
+                    specifiedType = Serializer._serializationBinder.BindToType(typeNameKey.AssemblyName, typeNameKey.TypeName);
                 }
                 catch (Exception ex)
                 {
@@ -969,7 +967,7 @@ namespace Newtonsoft.Json.Serialization
                             }
                         }
 
-#if !(PORTABLE || PORTABLE40 || NET35 || NET20)
+#if !(PORTABLE || PORTABLE40 || NET35 || NET20) || NETSTANDARD1_1
                         if (value is BigInteger)
                         {
                             return ConvertUtils.FromBigInteger((BigInteger)value, contract.NonNullableUnderlyingType);
@@ -1179,8 +1177,15 @@ namespace Newtonsoft.Json.Serialization
                 }
                 else
                 {
+                    object list = contract.OverrideCreator();
+
+                    if (contract.ShouldCreateWrapper)
+                    {
+                        list = contract.CreateWrapper(list);
+                    }
+
                     createdFromNonDefaultCreator = false;
-                    return (IList)contract.OverrideCreator();
+                    return (IList)list;
                 }
             }
             else if (contract.IsReadOnlyOrFixedSize)
@@ -2049,7 +2054,7 @@ namespace Newtonsoft.Json.Serialization
                                 while (e.MoveNext())
                                 {
                                     DictionaryEntry entry = e.Entry;
-                                    targetDictionary.Add(entry.Key, entry.Value);
+                                    targetDictionary[entry.Key] = entry.Value;
                                 }
                             }
                             finally
@@ -2196,6 +2201,11 @@ namespace Newtonsoft.Json.Serialization
                         throw JsonSerializationException.Create(reader, "Unexpected token when deserializing object: " + reader.TokenType);
                 }
             } while (!exit && reader.Read());
+
+            if (!exit)
+            {
+                ThrowUnexpectedEndException(reader, contract, null, "Unexpected end when deserializing object.");
+            }
 
             return propertyValues;
         }

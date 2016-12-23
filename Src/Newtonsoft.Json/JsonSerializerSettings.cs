@@ -58,7 +58,7 @@ namespace Newtonsoft.Json
         internal const FloatParseHandling DefaultFloatParseHandling = FloatParseHandling.Double;
         internal const FloatFormatHandling DefaultFloatFormatHandling = FloatFormatHandling.String;
         internal const StringEscapeHandling DefaultStringEscapeHandling = StringEscapeHandling.Default;
-        internal const FormatterAssemblyStyle DefaultFormatterAssemblyStyle = FormatterAssemblyStyle.Simple;
+        internal const TypeNameAssemblyFormatHandling DefaultTypeNameAssemblyFormatHandling = Json.TypeNameAssemblyFormatHandling.Simple;
         internal static readonly CultureInfo DefaultCulture;
         internal const bool DefaultCheckAdditionalContent = false;
         internal const string DefaultDateFormatString = @"yyyy'-'MM'-'dd'T'HH':'mm':'ss.FFFFFFFK";
@@ -76,7 +76,7 @@ namespace Newtonsoft.Json
         internal bool _maxDepthSet;
         internal string _dateFormatString;
         internal bool _dateFormatStringSet;
-        internal FormatterAssemblyStyle? _typeNameAssemblyFormat;
+        internal TypeNameAssemblyFormatHandling? _typeNameAssemblyFormatHandling;
         internal DefaultValueHandling? _defaultValueHandling;
         internal PreserveReferencesHandling? _preserveReferencesHandling;
         internal NullValueHandling? _nullValueHandling;
@@ -90,7 +90,7 @@ namespace Newtonsoft.Json
         internal GuidHandling? _guidHandling;
 
         /// <summary>
-        /// Gets or sets how reference loops (e.g. a class referencing itself) is handled.
+        /// Gets or sets how reference loops (e.g. a class referencing itself) are handled.
         /// </summary>
         /// <value>Reference loop handling.</value>
         public ReferenceLoopHandling ReferenceLoopHandling
@@ -130,7 +130,7 @@ namespace Newtonsoft.Json
         }
 
         /// <summary>
-        /// Gets or sets how null default are handled during serialization and deserialization.
+        /// Gets or sets how default values are handled during serialization and deserialization.
         /// </summary>
         /// <value>The default value handling.</value>
         public DefaultValueHandling DefaultValueHandling
@@ -184,10 +184,21 @@ namespace Newtonsoft.Json
         /// Gets or sets how a type name assembly is written and resolved by the serializer.
         /// </summary>
         /// <value>The type name assembly format.</value>
+        [Obsolete("TypeNameAssemblyFormat is obsolete. Use TypeNameAssemblyFormatHandling instead.")]
         public FormatterAssemblyStyle TypeNameAssemblyFormat
         {
-            get { return _typeNameAssemblyFormat ?? DefaultFormatterAssemblyStyle; }
-            set { _typeNameAssemblyFormat = value; }
+            get { return (FormatterAssemblyStyle)TypeNameAssemblyFormatHandling; }
+            set { TypeNameAssemblyFormatHandling = (TypeNameAssemblyFormatHandling)value; }
+        }
+
+        /// <summary>
+        /// Gets or sets how a type name assembly is written and resolved by the serializer.
+        /// </summary>
+        /// <value>The type name assembly format.</value>
+        public TypeNameAssemblyFormatHandling TypeNameAssemblyFormatHandling
+        {
+            get { return _typeNameAssemblyFormatHandling ?? DefaultTypeNameAssemblyFormatHandling; }
+            set { _typeNameAssemblyFormatHandling = value; }
         }
 
         /// <summary>
@@ -253,7 +264,32 @@ namespace Newtonsoft.Json
         /// Gets or sets the <see cref="SerializationBinder"/> used by the serializer when resolving type names.
         /// </summary>
         /// <value>The binder.</value>
-        public SerializationBinder Binder { get; set; }
+        [Obsolete("Binder is obsolete. Use SerializationBinder instead.")]
+        public SerializationBinder Binder
+        {
+            get
+            {
+                if (SerializationBinder == null)
+                {
+                    return null;
+                }
+
+                SerializationBinderAdapter adapter = SerializationBinder as SerializationBinderAdapter;
+                if (adapter != null)
+                {
+                    return adapter.SerializationBinder;
+                }
+
+                throw new InvalidOperationException("Cannot get SerializationBinder because an ISerializationBinder was previously set.");
+            }
+            set { SerializationBinder = value == null ? null : new SerializationBinderAdapter(value); }
+        }
+
+        /// <summary>
+        /// Gets or sets the <see cref="ISerializationBinder"/> used by the serializer when resolving type names.
+        /// </summary>
+        /// <value>The binder.</value>
+        public ISerializationBinder SerializationBinder { get; set; }
 
         /// <summary>
         /// Gets or sets the error handler called during serialization and deserialization.
@@ -272,7 +308,8 @@ namespace Newtonsoft.Json
         }
 
         /// <summary>
-        /// Get or set how <see cref="DateTime"/> and <see cref="DateTimeOffset"/> values are formatted when writing JSON text, and the expected date format when reading JSON text.
+        /// Gets or sets how <see cref="DateTime"/> and <see cref="DateTimeOffset"/> values are formatted when writing JSON text,
+        /// and the expected date format when reading JSON text.
         /// </summary>
         public string DateFormatString
         {
@@ -312,7 +349,7 @@ namespace Newtonsoft.Json
         }
 
         /// <summary>
-        /// Get or set how dates are written to JSON text.
+        /// Gets or sets how dates are written to JSON text.
         /// </summary>
         public DateFormatHandling DateFormatHandling
         {
@@ -321,7 +358,7 @@ namespace Newtonsoft.Json
         }
 
         /// <summary>
-        /// Get or set how <see cref="DateTime"/> time zones are handling during serialization and deserialization.
+        /// Gets or sets how <see cref="DateTime"/> time zones are handled during serialization and deserialization.
         /// </summary>
         public DateTimeZoneHandling DateTimeZoneHandling
         {
@@ -330,7 +367,7 @@ namespace Newtonsoft.Json
         }
 
         /// <summary>
-        /// Get or set how date formatted strings, e.g. "\/Date(1198908717056)\/" and "2012-03-21T05:40Z", are parsed when reading JSON.
+        /// Gets or sets how date formatted strings, e.g. "\/Date(1198908717056)\/" and "2012-03-21T05:40Z", are parsed when reading JSON.
         /// </summary>
         public DateParseHandling DateParseHandling
         {
@@ -339,7 +376,7 @@ namespace Newtonsoft.Json
         }
 
         /// <summary>
-        /// Get or set how special floating point numbers, e.g. <see cref="F:System.Double.NaN"/>,
+        /// Gets or sets how special floating point numbers, e.g. <see cref="F:System.Double.NaN"/>,
         /// <see cref="F:System.Double.PositiveInfinity"/> and <see cref="F:System.Double.NegativeInfinity"/>,
         /// are written as JSON.
         /// </summary>
@@ -350,7 +387,7 @@ namespace Newtonsoft.Json
         }
 
         /// <summary>
-        /// Get or set how floating point numbers, e.g. 1.0 and 9.9, are parsed when reading JSON text.
+        /// Gets or sets how floating point numbers, e.g. 1.0 and 9.9, are parsed when reading JSON text.
         /// </summary>
         public FloatParseHandling FloatParseHandling
         {
@@ -359,7 +396,7 @@ namespace Newtonsoft.Json
         }
 
         /// <summary>
-        /// Get or set how strings are escaped when writing JSON text.
+        /// Gets or sets how strings are escaped when writing JSON text.
         /// </summary>
         public StringEscapeHandling StringEscapeHandling
         {

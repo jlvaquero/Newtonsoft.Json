@@ -29,11 +29,8 @@ using System.IO;
 using System.Text;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Tests.TestObjects;
-#if NETFX_CORE
-using Microsoft.VisualStudio.TestPlatform.UnitTestFramework;
-using TestFixture = Microsoft.VisualStudio.TestPlatform.UnitTestFramework.TestClassAttribute;
-using Test = Microsoft.VisualStudio.TestPlatform.UnitTestFramework.TestMethodAttribute;
-#elif DNXCORE50
+using Newtonsoft.Json.Tests.TestObjects.Organization;
+#if DNXCORE50
 using Xunit;
 using Test = Xunit.FactAttribute;
 using Assert = Newtonsoft.Json.Tests.XUnitAssert;
@@ -610,7 +607,7 @@ namespace Newtonsoft.Json.Tests.Serialization
   ""Name"": ""Name!"",
   ""Test"": 1,
   ""Self"": {
-    ""$type"": ""Newtonsoft.Json.Tests.TestObjects.WagePerson, Newtonsoft.Json.Tests"",
+    ""$type"": ""Newtonsoft.Json.Tests.TestObjects.Organization.WagePerson, Newtonsoft.Json.Tests"",
     ""HourlyWage"": 2.0,
     ""Name"": null,
     ""BirthDate"": ""0001-01-01T00:00:00"",
@@ -638,7 +635,7 @@ namespace Newtonsoft.Json.Tests.Serialization
   ""Name"": ""Name!"",
   ""Test"": 1,
   ""Self"": {
-    ""$type"": ""Newtonsoft.Json.Tests.TestObjects.WagePerson, Newtonsoft.Json.Tests"",
+    ""$type"": ""Newtonsoft.Json.Tests.TestObjects.Organization.WagePerson, Newtonsoft.Json.Tests"",
     ""HourlyWage"": 2.0,
     ""Name"": null,
     ""BirthDate"": ""0001-01-01T00:00:00"",
@@ -685,7 +682,7 @@ namespace Newtonsoft.Json.Tests.Serialization
   ""$type"": ""Newtonsoft.Json.Tests.Serialization.ExtensionDataTests+PublicExtensionDataAttributeTestClass, Newtonsoft.Json.Tests"",
   ""Name"": ""Name!"",
   ""Test"": {
-    ""$type"": ""Newtonsoft.Json.Tests.TestObjects.WagePerson, Newtonsoft.Json.Tests"",
+    ""$type"": ""Newtonsoft.Json.Tests.TestObjects.Organization.WagePerson, Newtonsoft.Json.Tests"",
     ""HourlyWage"": 2.1,
     ""Name"": null,
     ""BirthDate"": ""0001-01-01T00:00:00"",

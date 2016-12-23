@@ -1,10 +1,6 @@
 using System.Reflection;
 using Newtonsoft.Json.Utilities;
-#if NETFX_CORE
-using Microsoft.VisualStudio.TestPlatform.UnitTestFramework;
-using TestFixture = Microsoft.VisualStudio.TestPlatform.UnitTestFramework.TestClassAttribute;
-using Test = Microsoft.VisualStudio.TestPlatform.UnitTestFramework.TestMethodAttribute;
-#elif DNXCORE50
+#if DNXCORE50
 using Xunit;
 using Test = Xunit.FactAttribute;
 using Assert = Newtonsoft.Json.Tests.XUnitAssert;
@@ -89,6 +85,17 @@ namespace Newtonsoft.Json.Tests.Utilities
             Assert.AreEqual("Input", o.Input);
             Assert.AreEqual(true, o.B1);
             Assert.AreEqual(false, o.B2);
+        }
+    }
+
+    public struct MyStruct
+    {
+        private int _intProperty;
+
+        public int IntProperty
+        {
+            get { return _intProperty; }
+            set { _intProperty = value; }
         }
     }
 }

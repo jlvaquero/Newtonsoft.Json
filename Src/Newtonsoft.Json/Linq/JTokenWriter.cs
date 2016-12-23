@@ -25,7 +25,7 @@
 
 using System;
 using System.Globalization;
-#if !(NET20 || NET35 || PORTABLE40 || PORTABLE)
+#if !(NET20 || NET35 || PORTABLE40 || PORTABLE) || NETSTANDARD1_1
 using System.Numerics;
 #endif
 using Newtonsoft.Json.Utilities;
@@ -221,7 +221,7 @@ namespace Newtonsoft.Json.Linq
         /// <param name="value">The <see cref="Object"/> value to write.</param>
         public override void WriteValue(object value)
         {
-#if !(NET20 || NET35 || PORTABLE || PORTABLE40)
+#if !(NET20 || NET35 || PORTABLE || PORTABLE40) || NETSTANDARD1_1
             if (value is BigInteger)
             {
                 InternalWriteValue(JsonToken.Integer);
@@ -263,7 +263,7 @@ namespace Newtonsoft.Json.Linq
         }
 
         /// <summary>
-        /// Writes out a comment <code>/*...*/</code> containing the specified text.
+        /// Writes a comment <c>/*...*/</c> containing the specified text.
         /// </summary>
         /// <param name="text">Text to place inside the comment.</param>
         public override void WriteComment(string text)

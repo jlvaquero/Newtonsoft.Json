@@ -121,10 +121,17 @@ namespace Newtonsoft.Json.Serialization
             set { _serializer.MetadataPropertyHandling = value; }
         }
 
+        [Obsolete("TypeNameAssemblyFormat is obsolete. Use TypeNameAssemblyFormatHandling instead.")]
         public override FormatterAssemblyStyle TypeNameAssemblyFormat
         {
             get { return _serializer.TypeNameAssemblyFormat; }
             set { _serializer.TypeNameAssemblyFormat = value; }
+        }
+
+        public override TypeNameAssemblyFormatHandling TypeNameAssemblyFormatHandling
+        {
+            get { return _serializer.TypeNameAssemblyFormatHandling; }
+            set { _serializer.TypeNameAssemblyFormatHandling = value; }
         }
 
         public override ConstructorHandling ConstructorHandling
@@ -133,10 +140,17 @@ namespace Newtonsoft.Json.Serialization
             set { _serializer.ConstructorHandling = value; }
         }
 
+        [Obsolete("Binder is obsolete. Use SerializationBinder instead.")]
         public override SerializationBinder Binder
         {
             get { return _serializer.Binder; }
             set { _serializer.Binder = value; }
+        }
+
+        public override ISerializationBinder SerializationBinder
+        {
+            get { return _serializer.SerializationBinder; }
+            set { _serializer.SerializationBinder = value; }
         }
 
         public override StreamingContext Context

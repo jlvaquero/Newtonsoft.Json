@@ -25,16 +25,12 @@
 
 using System;
 using System.Collections.Generic;
-#if !(NET20 || NET35 || PORTABLE)
+#if !(NET20 || NET35 || PORTABLE) || NETSTANDARD1_1
 using System.Numerics;
 #endif
 using System.Text;
 using Newtonsoft.Json.Converters;
-#if NETFX_CORE
-using Microsoft.VisualStudio.TestPlatform.UnitTestFramework;
-using TestFixture = Microsoft.VisualStudio.TestPlatform.UnitTestFramework.TestClassAttribute;
-using Test = Microsoft.VisualStudio.TestPlatform.UnitTestFramework.TestMethodAttribute;
-#elif DNXCORE50
+#if DNXCORE50
 using Xunit;
 using Test = Xunit.FactAttribute;
 using Assert = Newtonsoft.Json.Tests.XUnitAssert;
@@ -372,7 +368,7 @@ namespace Newtonsoft.Json.Tests.Linq
 
             Assert.AreEqual(5, (int)(new JValue(StringComparison.OrdinalIgnoreCase)));
 
-#if !(NET20 || NET35 || PORTABLE || PORTABLE40)
+#if !(NET20 || NET35 || PORTABLE || PORTABLE40) || NETSTANDARD1_1
             string bigIntegerText = "1234567899999999999999999999999999999999999999999999999999999999999990";
 
             Assert.AreEqual(BigInteger.Parse(bigIntegerText), (new JValue(BigInteger.Parse(bigIntegerText))).Value);
@@ -452,7 +448,7 @@ namespace Newtonsoft.Json.Tests.Linq
 #endif
             ExceptionAssert.Throws<ArgumentException>(() => { var i = (Uri)new JValue(true); }, "Can not convert Boolean to Uri.");
 
-#if !(NET20 || NET35 || PORTABLE || PORTABLE40)
+#if !(NET20 || NET35 || PORTABLE || PORTABLE40) || NETSTANDARD1_1
             ExceptionAssert.Throws<ArgumentException>(() => { var i = (new JValue(new Uri("http://www.google.com"))).ToObject<BigInteger>(); }, "Can not convert Uri to BigInteger.");
             ExceptionAssert.Throws<ArgumentException>(() => { var i = (JValue.CreateNull()).ToObject<BigInteger>(); }, "Can not convert Null to BigInteger.");
             ExceptionAssert.Throws<ArgumentException>(() => { var i = (new JValue(Guid.NewGuid())).ToObject<BigInteger>(); }, "Can not convert Guid to BigInteger.");
@@ -469,7 +465,7 @@ namespace Newtonsoft.Json.Tests.Linq
         [Test]
         public void ToObject()
         {
-#if !(NET20 || NET35 || PORTABLE)
+#if !(NET20 || NET35 || PORTABLE) || NETSTANDARD1_1
             Assert.AreEqual((BigInteger)1, (new JValue(1).ToObject(typeof(BigInteger))));
             Assert.AreEqual((BigInteger)1, (new JValue(1).ToObject(typeof(BigInteger?))));
             Assert.AreEqual((BigInteger?)null, (JValue.CreateNull().ToObject(typeof(BigInteger?))));
@@ -482,6 +478,7 @@ namespace Newtonsoft.Json.Tests.Linq
             Assert.AreEqual((ulong)1L, (new JValue(1).ToObject(typeof(ulong?))));
             Assert.AreEqual((sbyte)1L, (new JValue(1).ToObject(typeof(sbyte))));
             Assert.AreEqual((sbyte)1L, (new JValue(1).ToObject(typeof(sbyte?))));
+            Assert.AreEqual(null, (JValue.CreateNull().ToObject(typeof(sbyte?))));
             Assert.AreEqual((byte)1L, (new JValue(1).ToObject(typeof(byte))));
             Assert.AreEqual((byte)1L, (new JValue(1).ToObject(typeof(byte?))));
             Assert.AreEqual((short)1L, (new JValue(1).ToObject(typeof(short))));
@@ -526,7 +523,7 @@ namespace Newtonsoft.Json.Tests.Linq
             Assert.IsTrue(JToken.DeepEquals(new JValue((DateTimeOffset?)null), (JValue)(DateTimeOffset?)null));
 #endif
 
-#if !(NET20 || NET35 || PORTABLE || PORTABLE40)
+#if !(NET20 || NET35 || PORTABLE || PORTABLE40) || NETSTANDARD1_1
             // had to remove implicit casting to avoid user reference to System.Numerics.dll
             Assert.IsTrue(JToken.DeepEquals(new JValue(new BigInteger(1)), new JValue(new BigInteger(1))));
             Assert.IsTrue(JToken.DeepEquals(new JValue((BigInteger?)null), new JValue((BigInteger?)null)));
@@ -1149,7 +1146,7 @@ namespace Newtonsoft.Json.Tests.Linq
             Assert.IsTrue(a.DeepEquals(a2));
         }
 
-#if !(NETFX_CORE || PORTABLE || DNXCORE50 || PORTABLE40)
+#if !(PORTABLE || DNXCORE50 || PORTABLE40)
         [Test]
         public void Clone()
         {

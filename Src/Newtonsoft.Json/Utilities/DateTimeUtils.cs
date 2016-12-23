@@ -70,7 +70,22 @@ namespace Newtonsoft.Json.Utilities
                 case DateTimeKind.Utc:
                     return XmlDateTimeSerializationMode.Utc;
                 default:
-                    throw MiscellaneousUtils.CreateArgumentOutOfRangeException("kind", kind, "Unexpected DateTimeKind value.");
+                    throw MiscellaneousUtils.CreateArgumentOutOfRangeException(nameof(kind), kind, "Unexpected DateTimeKind value.");
+            }
+        }
+#else
+        public static string ToDateTimeFormat(DateTimeKind kind)
+        {
+            switch (kind)
+            {
+                case DateTimeKind.Local:
+                    return IsoDateFormat;
+                case DateTimeKind.Unspecified:
+                    return "yyyy-MM-ddTHH:mm:ss.FFFFFFF";
+                case DateTimeKind.Utc:
+                    return "yyyy-MM-ddTHH:mm:ss.FFFFFFFZ";
+                default:
+                    throw MiscellaneousUtils.CreateArgumentOutOfRangeException(nameof(kind), kind, "Unexpected DateTimeKind value.");
             }
         }
 #endif

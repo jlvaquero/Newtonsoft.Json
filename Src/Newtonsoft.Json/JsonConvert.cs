@@ -26,7 +26,7 @@
 using System;
 using System.IO;
 using System.Globalization;
-#if !(NET20 || NET35 || PORTABLE40 || PORTABLE)
+#if !(NET20 || NET35 || PORTABLE40 || PORTABLE) || NETSTANDARD1_1
 using System.Numerics;
 #endif
 #if !(NET20 || NET35 || PORTABLE40)
@@ -46,7 +46,7 @@ using System.Xml.Linq;
 namespace Newtonsoft.Json
 {
     /// <summary>
-    /// Provides methods for converting between common language runtime types and JSON types.
+    /// Provides methods for converting between .NET types and JSON types.
     /// </summary>
     /// <example>
     ///   <code lang="cs" source="..\Src\Newtonsoft.Json.Tests\Documentation\SerializationTests.cs" region="SerializeObject" title="Serializing and Deserializing JSON with JsonConvert" />
@@ -63,22 +63,22 @@ namespace Newtonsoft.Json
         public static Func<JsonSerializerSettings> DefaultSettings { get; set; }
 
         /// <summary>
-        /// Represents JavaScript's boolean value true as a string. This field is read-only.
+        /// Represents JavaScript's boolean value <c>true</c> as a string. This field is read-only.
         /// </summary>
         public static readonly string True = "true";
 
         /// <summary>
-        /// Represents JavaScript's boolean value false as a string. This field is read-only.
+        /// Represents JavaScript's boolean value <c>false</c> as a string. This field is read-only.
         /// </summary>
         public static readonly string False = "false";
 
         /// <summary>
-        /// Represents JavaScript's null as a string. This field is read-only.
+        /// Represents JavaScript's <c>null</c> as a string. This field is read-only.
         /// </summary>
         public static readonly string Null = "null";
 
         /// <summary>
-        /// Represents JavaScript's undefined as a string. This field is read-only.
+        /// Represents JavaScript's <c>undefined</c> as a string. This field is read-only.
         /// </summary>
         public static readonly string Undefined = "undefined";
 
@@ -93,7 +93,7 @@ namespace Newtonsoft.Json
         public static readonly string NegativeInfinity = "-Infinity";
 
         /// <summary>
-        /// Represents JavaScript's NaN as a string. This field is read-only.
+        /// Represents JavaScript's <c>NaN</c> as a string. This field is read-only.
         /// </summary>
         public static readonly string NaN = "NaN";
 
@@ -238,7 +238,7 @@ namespace Newtonsoft.Json
             return value.ToString(null, CultureInfo.InvariantCulture);
         }
 
-#if !(NET20 || NET35 || PORTABLE40 || PORTABLE)
+#if !(NET20 || NET35 || PORTABLE40 || PORTABLE) || NETSTANDARD1_1
         private static string ToStringInternal(BigInteger value)
         {
             return value.ToString(null, CultureInfo.InvariantCulture);
@@ -510,7 +510,7 @@ namespace Newtonsoft.Json
                     return ToString((Uri)value);
                 case PrimitiveTypeCode.TimeSpan:
                     return ToString((TimeSpan)value);
-#if !(NET20 || NET35 || PORTABLE40 || PORTABLE)
+#if !(NET20 || NET35 || PORTABLE40 || PORTABLE) || NETSTANDARD1_1
                 case PrimitiveTypeCode.BigInteger:
                     return ToStringInternal((BigInteger)value);
 #endif
@@ -534,7 +534,7 @@ namespace Newtonsoft.Json
         /// Serializes the specified object to a JSON string using formatting.
         /// </summary>
         /// <param name="value">The object to serialize.</param>
-        /// <param name="formatting">Indicates how the output is formatted.</param>
+        /// <param name="formatting">Indicates how the output should be formatted.</param>
         /// <returns>
         /// A JSON string representation of the object.
         /// </returns>
@@ -547,7 +547,7 @@ namespace Newtonsoft.Json
         /// Serializes the specified object to a JSON string using a collection of <see cref="JsonConverter"/>.
         /// </summary>
         /// <param name="value">The object to serialize.</param>
-        /// <param name="converters">A collection converters used while serializing.</param>
+        /// <param name="converters">A collection of converters used while serializing.</param>
         /// <returns>A JSON string representation of the object.</returns>
         public static string SerializeObject(object value, params JsonConverter[] converters)
         {
@@ -562,8 +562,8 @@ namespace Newtonsoft.Json
         /// Serializes the specified object to a JSON string using formatting and a collection of <see cref="JsonConverter"/>.
         /// </summary>
         /// <param name="value">The object to serialize.</param>
-        /// <param name="formatting">Indicates how the output is formatted.</param>
-        /// <param name="converters">A collection converters used while serializing.</param>
+        /// <param name="formatting">Indicates how the output should be formatted.</param>
+        /// <param name="converters">A collection of converters used while serializing.</param>
         /// <returns>A JSON string representation of the object.</returns>
         public static string SerializeObject(object value, Formatting formatting, params JsonConverter[] converters)
         {
@@ -579,7 +579,7 @@ namespace Newtonsoft.Json
         /// </summary>
         /// <param name="value">The object to serialize.</param>
         /// <param name="settings">The <see cref="JsonSerializerSettings"/> used to serialize the object.
-        /// If this is null, default serialization settings will be used.</param>
+        /// If this is <c>null</c>, default serialization settings will be used.</param>
         /// <returns>
         /// A JSON string representation of the object.
         /// </returns>
@@ -593,7 +593,7 @@ namespace Newtonsoft.Json
         /// </summary>
         /// <param name="value">The object to serialize.</param>
         /// <param name="settings">The <see cref="JsonSerializerSettings"/> used to serialize the object.
-        /// If this is null, default serialization settings will be used.</param>
+        /// If this is <c>null</c>, default serialization settings will be used.</param>
         /// <param name="type">
         /// The type of the value being serialized.
         /// This parameter is used when <see cref="TypeNameHandling"/> is Auto to write out the type name if the type of the value does not match.
@@ -613,9 +613,9 @@ namespace Newtonsoft.Json
         /// Serializes the specified object to a JSON string using formatting and <see cref="JsonSerializerSettings"/>.
         /// </summary>
         /// <param name="value">The object to serialize.</param>
-        /// <param name="formatting">Indicates how the output is formatted.</param>
+        /// <param name="formatting">Indicates how the output should be formatted.</param>
         /// <param name="settings">The <see cref="JsonSerializerSettings"/> used to serialize the object.
-        /// If this is null, default serialization settings will be used.</param>
+        /// If this is <c>null</c>, default serialization settings will be used.</param>
         /// <returns>
         /// A JSON string representation of the object.
         /// </returns>
@@ -628,9 +628,9 @@ namespace Newtonsoft.Json
         /// Serializes the specified object to a JSON string using a type, formatting and <see cref="JsonSerializerSettings"/>.
         /// </summary>
         /// <param name="value">The object to serialize.</param>
-        /// <param name="formatting">Indicates how the output is formatted.</param>
+        /// <param name="formatting">Indicates how the output should be formatted.</param>
         /// <param name="settings">The <see cref="JsonSerializerSettings"/> used to serialize the object.
-        /// If this is null, default serialization settings will be used.</param>
+        /// If this is <c>null</c>, default serialization settings will be used.</param>
         /// <param name="type">
         /// The type of the value being serialized.
         /// This parameter is used when <see cref="TypeNameHandling"/> is Auto to write out the type name if the type of the value does not match.
@@ -668,7 +668,7 @@ namespace Newtonsoft.Json
         /// </summary>
         /// <param name="value">The object to serialize.</param>
         /// <returns>
-        /// A task that represents the asynchronous serialize operation. The value of the <c>TResult</c> parameter contains a JSON string representation of the object.
+        /// A task that represents the asynchronous serialization operation. The value of the <c>TResult</c> parameter contains a JSON string representation of the object.
         /// </returns>
         [ObsoleteAttribute("SerializeObjectAsync is obsolete. Use the Task.Factory.StartNew method to serialize JSON asynchronously: Task.Factory.StartNew(() => JsonConvert.SerializeObject(value))")]
         public static Task<string> SerializeObjectAsync(object value)
@@ -681,9 +681,9 @@ namespace Newtonsoft.Json
         /// Serialization will happen on a new thread.
         /// </summary>
         /// <param name="value">The object to serialize.</param>
-        /// <param name="formatting">Indicates how the output is formatted.</param>
+        /// <param name="formatting">Indicates how the output should be formatted.</param>
         /// <returns>
-        /// A task that represents the asynchronous serialize operation. The value of the <c>TResult</c> parameter contains a JSON string representation of the object.
+        /// A task that represents the asynchronous serialization operation. The value of the <c>TResult</c> parameter contains a JSON string representation of the object.
         /// </returns>
         [ObsoleteAttribute("SerializeObjectAsync is obsolete. Use the Task.Factory.StartNew method to serialize JSON asynchronously: Task.Factory.StartNew(() => JsonConvert.SerializeObject(value, formatting))")]
         public static Task<string> SerializeObjectAsync(object value, Formatting formatting)
@@ -696,11 +696,11 @@ namespace Newtonsoft.Json
         /// Serialization will happen on a new thread.
         /// </summary>
         /// <param name="value">The object to serialize.</param>
-        /// <param name="formatting">Indicates how the output is formatted.</param>
+        /// <param name="formatting">Indicates how the output should be formatted.</param>
         /// <param name="settings">The <see cref="JsonSerializerSettings"/> used to serialize the object.
-        /// If this is null, default serialization settings will be used.</param>
+        /// If this is <c>null</c>, default serialization settings will be used.</param>
         /// <returns>
-        /// A task that represents the asynchronous serialize operation. The value of the <c>TResult</c> parameter contains a JSON string representation of the object.
+        /// A task that represents the asynchronous serialization operation. The value of the <c>TResult</c> parameter contains a JSON string representation of the object.
         /// </returns>
         [ObsoleteAttribute("SerializeObjectAsync is obsolete. Use the Task.Factory.StartNew method to serialize JSON asynchronously: Task.Factory.StartNew(() => JsonConvert.SerializeObject(value, formatting, settings))")]
         public static Task<string> SerializeObjectAsync(object value, Formatting formatting, JsonSerializerSettings settings)
@@ -727,7 +727,7 @@ namespace Newtonsoft.Json
         /// <param name="value">The JSON to deserialize.</param>
         /// <param name="settings">
         /// The <see cref="JsonSerializerSettings"/> used to deserialize the object.
-        /// If this is null, default serialization settings will be used.
+        /// If this is <c>null</c>, default serialization settings will be used.
         /// </param>
         /// <returns>The deserialized object from the JSON string.</returns>
         public static object DeserializeObject(string value, JsonSerializerSettings settings)
@@ -762,7 +762,7 @@ namespace Newtonsoft.Json
         /// </summary>
         /// <typeparam name="T">
         /// The anonymous type to deserialize to. This can't be specified
-        /// traditionally and must be infered from the anonymous type passed
+        /// traditionally and must be inferred from the anonymous type passed
         /// as a parameter.
         /// </typeparam>
         /// <param name="value">The JSON to deserialize.</param>
@@ -778,14 +778,14 @@ namespace Newtonsoft.Json
         /// </summary>
         /// <typeparam name="T">
         /// The anonymous type to deserialize to. This can't be specified
-        /// traditionally and must be infered from the anonymous type passed
+        /// traditionally and must be inferred from the anonymous type passed
         /// as a parameter.
         /// </typeparam>
         /// <param name="value">The JSON to deserialize.</param>
         /// <param name="anonymousTypeObject">The anonymous type object.</param>
         /// <param name="settings">
         /// The <see cref="JsonSerializerSettings"/> used to deserialize the object.
-        /// If this is null, default serialization settings will be used.
+        /// If this is <c>null</c>, default serialization settings will be used.
         /// </param>
         /// <returns>The deserialized anonymous type from the JSON string.</returns>
         public static T DeserializeAnonymousType<T>(string value, T anonymousTypeObject, JsonSerializerSettings settings)
@@ -812,7 +812,7 @@ namespace Newtonsoft.Json
         /// <param name="value">The object to deserialize.</param>
         /// <param name="settings">
         /// The <see cref="JsonSerializerSettings"/> used to deserialize the object.
-        /// If this is null, default serialization settings will be used.
+        /// If this is <c>null</c>, default serialization settings will be used.
         /// </param>
         /// <returns>The deserialized object from the JSON string.</returns>
         public static T DeserializeObject<T>(string value, JsonSerializerSettings settings)
@@ -843,7 +843,7 @@ namespace Newtonsoft.Json
         /// <param name="type">The type of the object to deserialize to.</param>
         /// <param name="settings">
         /// The <see cref="JsonSerializerSettings"/> used to deserialize the object.
-        /// If this is null, default serialization settings will be used.
+        /// If this is <c>null</c>, default serialization settings will be used.
         /// </param>
         /// <returns>The deserialized object from the JSON string.</returns>
         public static object DeserializeObject(string value, Type type, JsonSerializerSettings settings)
@@ -858,7 +858,7 @@ namespace Newtonsoft.Json
                 jsonSerializer.CheckAdditionalContent = true;
             }
 
-            using (var reader = new JsonTextReader(new StringReader(value)))
+            using (JsonTextReader reader = new JsonTextReader(new StringReader(value)))
             {
                 return jsonSerializer.Deserialize(reader, type);
             }
@@ -872,7 +872,7 @@ namespace Newtonsoft.Json
         /// <typeparam name="T">The type of the object to deserialize to.</typeparam>
         /// <param name="value">The JSON to deserialize.</param>
         /// <returns>
-        /// A task that represents the asynchronous deserialize operation. The value of the <c>TResult</c> parameter contains the deserialized object from the JSON string.
+        /// A task that represents the asynchronous deserialization operation. The value of the <c>TResult</c> parameter contains the deserialized object from the JSON string.
         /// </returns>
         [ObsoleteAttribute("DeserializeObjectAsync is obsolete. Use the Task.Factory.StartNew method to deserialize JSON asynchronously: Task.Factory.StartNew(() => JsonConvert.DeserializeObject<T>(value))")]
         public static Task<T> DeserializeObjectAsync<T>(string value)
@@ -888,10 +888,10 @@ namespace Newtonsoft.Json
         /// <param name="value">The JSON to deserialize.</param>
         /// <param name="settings">
         /// The <see cref="JsonSerializerSettings"/> used to deserialize the object.
-        /// If this is null, default serialization settings will be used.
+        /// If this is <c>null</c>, default serialization settings will be used.
         /// </param>
         /// <returns>
-        /// A task that represents the asynchronous deserialize operation. The value of the <c>TResult</c> parameter contains the deserialized object from the JSON string.
+        /// A task that represents the asynchronous deserialization operation. The value of the <c>TResult</c> parameter contains the deserialized object from the JSON string.
         /// </returns>
         [ObsoleteAttribute("DeserializeObjectAsync is obsolete. Use the Task.Factory.StartNew method to deserialize JSON asynchronously: Task.Factory.StartNew(() => JsonConvert.DeserializeObject<T>(value, settings))")]
         public static Task<T> DeserializeObjectAsync<T>(string value, JsonSerializerSettings settings)
@@ -905,7 +905,7 @@ namespace Newtonsoft.Json
         /// </summary>
         /// <param name="value">The JSON to deserialize.</param>
         /// <returns>
-        /// A task that represents the asynchronous deserialize operation. The value of the <c>TResult</c> parameter contains the deserialized object from the JSON string.
+        /// A task that represents the asynchronous deserialization operation. The value of the <c>TResult</c> parameter contains the deserialized object from the JSON string.
         /// </returns>
         [ObsoleteAttribute("DeserializeObjectAsync is obsolete. Use the Task.Factory.StartNew method to deserialize JSON asynchronously: Task.Factory.StartNew(() => JsonConvert.DeserializeObject(value))")]
         public static Task<object> DeserializeObjectAsync(string value)
@@ -921,10 +921,10 @@ namespace Newtonsoft.Json
         /// <param name="type">The type of the object to deserialize to.</param>
         /// <param name="settings">
         /// The <see cref="JsonSerializerSettings"/> used to deserialize the object.
-        /// If this is null, default serialization settings will be used.
+        /// If this is <c>null</c>, default serialization settings will be used.
         /// </param>
         /// <returns>
-        /// A task that represents the asynchronous deserialize operation. The value of the <c>TResult</c> parameter contains the deserialized object from the JSON string.
+        /// A task that represents the asynchronous deserialization operation. The value of the <c>TResult</c> parameter contains the deserialized object from the JSON string.
         /// </returns>
         [ObsoleteAttribute("DeserializeObjectAsync is obsolete. Use the Task.Factory.StartNew method to deserialize JSON asynchronously: Task.Factory.StartNew(() => JsonConvert.DeserializeObject(value, type, settings))")]
         public static Task<object> DeserializeObjectAsync(string value, Type type, JsonSerializerSettings settings)
@@ -952,7 +952,7 @@ namespace Newtonsoft.Json
         /// <param name="target">The target object to populate values onto.</param>
         /// <param name="settings">
         /// The <see cref="JsonSerializerSettings"/> used to deserialize the object.
-        /// If this is null, default serialization settings will be used.
+        /// If this is <c>null</c>, default serialization settings will be used.
         /// </param>
         public static void PopulateObject(string value, object target, JsonSerializerSettings settings)
         {
@@ -977,10 +977,10 @@ namespace Newtonsoft.Json
         /// <param name="target">The target object to populate values onto.</param>
         /// <param name="settings">
         /// The <see cref="JsonSerializerSettings"/> used to deserialize the object.
-        /// If this is null, default serialization settings will be used.
+        /// If this is <c>null</c>, default serialization settings will be used.
         /// </param>
         /// <returns>
-        /// A task that represents the asynchronous populate operation.
+        /// A task that represents the asynchronous population operation.
         /// </returns>
         [ObsoleteAttribute("PopulateObjectAsync is obsolete. Use the Task.Factory.StartNew method to populate an object with JSON values asynchronously: Task.Factory.StartNew(() => JsonConvert.PopulateObject(value, target, settings))")]
         public static Task PopulateObjectAsync(string value, object target, JsonSerializerSettings settings)
@@ -993,7 +993,7 @@ namespace Newtonsoft.Json
         #region Xml
 #if !(PORTABLE40 || PORTABLE || DOTNET)
         /// <summary>
-        /// Serializes the XML node to a JSON string.
+        /// Serializes the <see cref="XmlNode"/> to a JSON string.
         /// </summary>
         /// <param name="node">The node to serialize.</param>
         /// <returns>A JSON string of the XmlNode.</returns>
@@ -1003,10 +1003,10 @@ namespace Newtonsoft.Json
         }
 
         /// <summary>
-        /// Serializes the XML node to a JSON string using formatting.
+        /// Serializes the <see cref="XmlNode"/> to a JSON string using formatting.
         /// </summary>
         /// <param name="node">The node to serialize.</param>
-        /// <param name="formatting">Indicates how the output is formatted.</param>
+        /// <param name="formatting">Indicates how the output should be formatted.</param>
         /// <returns>A JSON string of the XmlNode.</returns>
         public static string SerializeXmlNode(XmlNode node, Formatting formatting)
         {
@@ -1016,10 +1016,10 @@ namespace Newtonsoft.Json
         }
 
         /// <summary>
-        /// Serializes the XML node to a JSON string using formatting and omits the root object if <paramref name="omitRootObject"/> is <c>true</c>.
+        /// Serializes the <see cref="XmlNode"/> to a JSON string using formatting and omits the root object if <paramref name="omitRootObject"/> is <c>true</c>.
         /// </summary>
         /// <param name="node">The node to serialize.</param>
-        /// <param name="formatting">Indicates how the output is formatted.</param>
+        /// <param name="formatting">Indicates how the output should be formatted.</param>
         /// <param name="omitRootObject">Omits writing the root object.</param>
         /// <returns>A JSON string of the XmlNode.</returns>
         public static string SerializeXmlNode(XmlNode node, Formatting formatting, bool omitRootObject)
@@ -1030,29 +1030,29 @@ namespace Newtonsoft.Json
         }
 
         /// <summary>
-        /// Deserializes the XmlNode from a JSON string.
+        /// Deserializes the <see cref="XmlNode"/> from a JSON string.
         /// </summary>
         /// <param name="value">The JSON string.</param>
-        /// <returns>The deserialized XmlNode</returns>
+        /// <returns>The deserialized XmlNode.</returns>
         public static XmlDocument DeserializeXmlNode(string value)
         {
             return DeserializeXmlNode(value, null);
         }
 
         /// <summary>
-        /// Deserializes the XmlNode from a JSON string nested in a root elment specified by <paramref name="deserializeRootElementName"/>.
+        /// Deserializes the <see cref="XmlNode"/> from a JSON string nested in a root element specified by <paramref name="deserializeRootElementName"/>.
         /// </summary>
         /// <param name="value">The JSON string.</param>
         /// <param name="deserializeRootElementName">The name of the root element to append when deserializing.</param>
-        /// <returns>The deserialized XmlNode</returns>
+        /// <returns>The deserialized XmlNode.</returns>
         public static XmlDocument DeserializeXmlNode(string value, string deserializeRootElementName)
         {
             return DeserializeXmlNode(value, deserializeRootElementName, false);
         }
 
         /// <summary>
-        /// Deserializes the XmlNode from a JSON string nested in a root elment specified by <paramref name="deserializeRootElementName"/>
-        /// and writes a .NET array attribute for collections.
+        /// Deserializes the <see cref="XmlNode"/> from a JSON string nested in a root element specified by <paramref name="deserializeRootElementName"/>
+        /// and writes a Json.NET array attribute for collections.
         /// </summary>
         /// <param name="value">The JSON string.</param>
         /// <param name="deserializeRootElementName">The name of the root element to append when deserializing.</param>
@@ -1060,7 +1060,7 @@ namespace Newtonsoft.Json
         /// A flag to indicate whether to write the Json.NET array attribute.
         /// This attribute helps preserve arrays when converting the written XML back to JSON.
         /// </param>
-        /// <returns>The deserialized XmlNode</returns>
+        /// <returns>The deserialized XmlNode.</returns>
         public static XmlDocument DeserializeXmlNode(string value, string deserializeRootElementName, bool writeArrayAttribute)
         {
             XmlNodeConverter converter = new XmlNodeConverter();
@@ -1086,7 +1086,7 @@ namespace Newtonsoft.Json
         /// Serializes the <see cref="XNode"/> to a JSON string using formatting.
         /// </summary>
         /// <param name="node">The node to convert to JSON.</param>
-        /// <param name="formatting">Indicates how the output is formatted.</param>
+        /// <param name="formatting">Indicates how the output should be formatted.</param>
         /// <returns>A JSON string of the XNode.</returns>
         public static string SerializeXNode(XObject node, Formatting formatting)
         {
@@ -1097,7 +1097,7 @@ namespace Newtonsoft.Json
         /// Serializes the <see cref="XNode"/> to a JSON string using formatting and omits the root object if <paramref name="omitRootObject"/> is <c>true</c>.
         /// </summary>
         /// <param name="node">The node to serialize.</param>
-        /// <param name="formatting">Indicates how the output is formatted.</param>
+        /// <param name="formatting">Indicates how the output should be formatted.</param>
         /// <param name="omitRootObject">Omits writing the root object.</param>
         /// <returns>A JSON string of the XNode.</returns>
         public static string SerializeXNode(XObject node, Formatting formatting, bool omitRootObject)
@@ -1111,26 +1111,26 @@ namespace Newtonsoft.Json
         /// Deserializes the <see cref="XNode"/> from a JSON string.
         /// </summary>
         /// <param name="value">The JSON string.</param>
-        /// <returns>The deserialized XNode</returns>
+        /// <returns>The deserialized XNode.</returns>
         public static XDocument DeserializeXNode(string value)
         {
             return DeserializeXNode(value, null);
         }
 
         /// <summary>
-        /// Deserializes the <see cref="XNode"/> from a JSON string nested in a root elment specified by <paramref name="deserializeRootElementName"/>.
+        /// Deserializes the <see cref="XNode"/> from a JSON string nested in a root element specified by <paramref name="deserializeRootElementName"/>.
         /// </summary>
         /// <param name="value">The JSON string.</param>
         /// <param name="deserializeRootElementName">The name of the root element to append when deserializing.</param>
-        /// <returns>The deserialized XNode</returns>
+        /// <returns>The deserialized XNode.</returns>
         public static XDocument DeserializeXNode(string value, string deserializeRootElementName)
         {
             return DeserializeXNode(value, deserializeRootElementName, false);
         }
 
         /// <summary>
-        /// Deserializes the <see cref="XNode"/> from a JSON string nested in a root elment specified by <paramref name="deserializeRootElementName"/>
-        /// and writes a .NET array attribute for collections.
+        /// Deserializes the <see cref="XNode"/> from a JSON string nested in a root element specified by <paramref name="deserializeRootElementName"/>
+        /// and writes a Json.NET array attribute for collections.
         /// </summary>
         /// <param name="value">The JSON string.</param>
         /// <param name="deserializeRootElementName">The name of the root element to append when deserializing.</param>
@@ -1138,7 +1138,7 @@ namespace Newtonsoft.Json
         /// A flag to indicate whether to write the Json.NET array attribute.
         /// This attribute helps preserve arrays when converting the written XML back to JSON.
         /// </param>
-        /// <returns>The deserialized XNode</returns>
+        /// <returns>The deserialized XNode.</returns>
         public static XDocument DeserializeXNode(string value, string deserializeRootElementName, bool writeArrayAttribute)
         {
             XmlNodeConverter converter = new XmlNodeConverter();

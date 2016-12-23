@@ -577,8 +577,8 @@ namespace Newtonsoft.Json.Serialization
             writer.WriteStartObject();
 
             bool isReference = ResolveIsReference(contract, member, collectionContract, containerProperty) ?? HasFlag(Serializer._preserveReferencesHandling, PreserveReferencesHandling.Objects);
-            // don't make readonly fields the referenced value because they can't be deserialized to
-            if (isReference && (member == null || member.Writable))
+            // don't make readonly fields that aren't creator parameters the referenced value because they can't be deserialized to
+            if (isReference && (member == null || member.Writable || HasCreatorParameter(collectionContract, member)))
             {
                 WriteReferenceIdProperty(writer, contract.UnderlyingType, value);
             }
@@ -586,6 +586,17 @@ namespace Newtonsoft.Json.Serialization
             {
                 WriteTypeProperty(writer, contract.UnderlyingType);
             }
+        }
+
+        private bool HasCreatorParameter(JsonContainerContract contract, JsonProperty property)
+        {
+            JsonObjectContract objectContract = contract as JsonObjectContract;
+            if (objectContract == null)
+            {
+                return false;
+            }
+
+            return objectContract.CreatorParameters.Contains(property.PropertyName);
         }
 
         private void WriteReferenceIdProperty(JsonWriter writer, Type type, object value)
@@ -603,7 +614,7 @@ namespace Newtonsoft.Json.Serialization
 
         private void WriteTypeProperty(JsonWriter writer, Type type)
         {
-            string typeName = ReflectionUtils.GetTypeName(type, Serializer._typeNameAssemblyFormat, Serializer._binder);
+            string typeName = ReflectionUtils.GetTypeName(type, Serializer._typeNameAssemblyFormatHandling, Serializer._serializationBinder);
 
             if (TraceWriter != null && TraceWriter.LevelFilter >= TraceLevel.Verbose)
             {
@@ -804,8 +815,8 @@ namespace Newtonsoft.Json.Serialization
         private bool WriteStartArray(JsonWriter writer, object values, JsonArrayContract contract, JsonProperty member, JsonContainerContract containerContract, JsonProperty containerProperty)
         {
             bool isReference = ResolveIsReference(contract, member, containerContract, containerProperty) ?? HasFlag(Serializer._preserveReferencesHandling, PreserveReferencesHandling.Arrays);
-            // don't make readonly fields the referenced value because they can't be deserialized to
-            isReference = (isReference && (member == null || member.Writable));
+            // don't make readonly fields that aren't creator parameters the referenced value because they can't be deserialized to
+            isReference = (isReference && (member == null || member.Writable || HasCreatorParameter(containerContract, member)));
 
             bool includeTypeDetails = ShouldWriteType(TypeNameHandling.Arrays, contract, member, containerContract, containerProperty);
             bool writeMetadataObject = isReference || includeTypeDetails;
@@ -1002,14 +1013,14 @@ namespace Newtonsoft.Json.Serialization
             {
                 if (member != null)
                 {
-                    if (contract.UnderlyingType != member.PropertyContract.CreatedType)
+                    if (contract.NonNullableUnderlyingType != member.PropertyContract.CreatedType)
                     {
                         return true;
                     }
                 }
                 else if (containerContract != null)
                 {
-                    if (containerContract.ItemContract == null || contract.UnderlyingType != containerContract.ItemContract.CreatedType)
+                    if (containerContract.ItemContract == null || contract.NonNullableUnderlyingType != containerContract.ItemContract.CreatedType)
                     {
                         return true;
                     }
@@ -1018,7 +1029,7 @@ namespace Newtonsoft.Json.Serialization
                 {
                     JsonContract rootContract = Serializer._contractResolver.ResolveContract(_rootType);
 
-                    if (contract.UnderlyingType != rootContract.CreatedType)
+                    if (contract.NonNullableUnderlyingType != rootContract.CreatedType)
                     {
                         return true;
                     }
@@ -1119,28 +1130,49 @@ namespace Newtonsoft.Json.Serialization
             if (contract.ContractType == JsonContractType.Primitive)
             {
                 JsonPrimitiveContract primitiveContract = (JsonPrimitiveContract)contract;
-                if (primitiveContract.TypeCode == PrimitiveTypeCode.DateTime || primitiveContract.TypeCode == PrimitiveTypeCode.DateTimeNullable)
+                switch (primitiveContract.TypeCode)
                 {
-                    DateTime dt = DateTimeUtils.EnsureDateTime((DateTime)name, writer.DateTimeZoneHandling);
+                    case PrimitiveTypeCode.DateTime:
+                    case PrimitiveTypeCode.DateTimeNullable:
+                    {
+                        DateTime dt = DateTimeUtils.EnsureDateTime((DateTime)name, writer.DateTimeZoneHandling);
 
-                    escape = false;
-                    StringWriter sw = new StringWriter(CultureInfo.InvariantCulture);
-                    DateTimeUtils.WriteDateTimeString(sw, dt, writer.DateFormatHandling, writer.DateFormatString, writer.Culture);
-                    return sw.ToString();
-                }
+                        escape = false;
+                        StringWriter sw = new StringWriter(CultureInfo.InvariantCulture);
+                        DateTimeUtils.WriteDateTimeString(sw, dt, writer.DateFormatHandling, writer.DateFormatString, writer.Culture);
+                        return sw.ToString();
+                    }
 #if !NET20
-                else if (primitiveContract.TypeCode == PrimitiveTypeCode.DateTimeOffset || primitiveContract.TypeCode == PrimitiveTypeCode.DateTimeOffsetNullable)
-                {
-                    escape = false;
-                    StringWriter sw = new StringWriter(CultureInfo.InvariantCulture);
-                    DateTimeUtils.WriteDateTimeOffsetString(sw, (DateTimeOffset)name, writer.DateFormatHandling, writer.DateFormatString, writer.Culture);
-                    return sw.ToString();
-                }
+                    case PrimitiveTypeCode.DateTimeOffset:
+                    case PrimitiveTypeCode.DateTimeOffsetNullable:
+                    {
+                        escape = false;
+                        StringWriter sw = new StringWriter(CultureInfo.InvariantCulture);
+                        DateTimeUtils.WriteDateTimeOffsetString(sw, (DateTimeOffset)name, writer.DateFormatHandling, writer.DateFormatString, writer.Culture);
+                        return sw.ToString();
+                    }
 #endif
-                else
-                {
-                    escape = true;
-                    return Convert.ToString(name, CultureInfo.InvariantCulture);
+                    case PrimitiveTypeCode.Double:
+                    case PrimitiveTypeCode.DoubleNullable:
+                    {
+                        double d = (double)name;
+
+                        escape = false;
+                        return d.ToString("R", CultureInfo.InvariantCulture);
+                    }
+                    case PrimitiveTypeCode.Single:
+                    case PrimitiveTypeCode.SingleNullable:
+                    {
+                        float f = (float)name;
+
+                        escape = false;
+                        return f.ToString("R", CultureInfo.InvariantCulture);
+                    }
+                    default:
+                    {
+                        escape = true;
+                        return Convert.ToString(name, CultureInfo.InvariantCulture);
+                    }
                 }
             }
             else if (TryConvertToString(name, name.GetType(), out propertyName))

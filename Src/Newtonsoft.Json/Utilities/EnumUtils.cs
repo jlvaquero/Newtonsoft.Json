@@ -43,10 +43,10 @@ namespace Newtonsoft.Json.Utilities
         private static BidirectionalDictionary<string, string> InitializeEnumType(Type type)
         {
             BidirectionalDictionary<string, string> map = new BidirectionalDictionary<string, string>(
-                StringComparer.OrdinalIgnoreCase,
-                StringComparer.OrdinalIgnoreCase);
+                StringComparer.Ordinal,
+                StringComparer.Ordinal);
 
-            foreach (FieldInfo f in type.GetFields())
+            foreach (FieldInfo f in type.GetFields(BindingFlags.Public | BindingFlags.Static))
             {
                 string n1 = f.Name;
                 string n2;
@@ -160,9 +160,7 @@ namespace Newtonsoft.Json.Utilities
 
             List<object> values = new List<object>();
 
-            var fields = enumType.GetFields().Where(f => f.IsLiteral);
-
-            foreach (FieldInfo field in fields)
+            foreach (FieldInfo field in enumType.GetFields(BindingFlags.Public | BindingFlags.Static))
             {
                 object value = field.GetValue(enumType);
                 values.Add(value);
@@ -180,9 +178,7 @@ namespace Newtonsoft.Json.Utilities
 
             List<string> values = new List<string>();
 
-            var fields = enumType.GetFields().Where(f => f.IsLiteral);
-
-            foreach (FieldInfo field in fields)
+            foreach (FieldInfo field in enumType.GetFields(BindingFlags.Public | BindingFlags.Static))
             {
                 values.Add(field.Name);
             }
@@ -190,7 +186,7 @@ namespace Newtonsoft.Json.Utilities
             return values;
         }
 
-        public static object ParseEnumName(string enumText, bool isNullable, Type t)
+        public static object ParseEnumName(string enumText, bool isNullable, bool disallowValue, Type t)
         {
             if (enumText == string.Empty && isNullable)
             {
@@ -200,21 +196,46 @@ namespace Newtonsoft.Json.Utilities
             string finalEnumText;
 
             BidirectionalDictionary<string, string> map = EnumMemberNamesPerType.Get(t);
-            if (enumText.IndexOf(',') != -1)
+            string resolvedEnumName;
+            if (TryResolvedEnumName(map, enumText, out resolvedEnumName))
+            {
+                finalEnumText = resolvedEnumName;
+            }
+            else if (enumText.IndexOf(',') != -1)
             {
                 string[] names = enumText.Split(',');
                 for (int i = 0; i < names.Length; i++)
                 {
                     string name = names[i].Trim();
 
-                    names[i] = ResolvedEnumName(map, name);
+                    names[i] = TryResolvedEnumName(map, name, out resolvedEnumName)
+                        ? resolvedEnumName
+                        : name;
                 }
 
                 finalEnumText = string.Join(", ", names);
             }
             else
             {
-                finalEnumText = ResolvedEnumName(map, enumText);
+                finalEnumText = enumText;
+
+                if (disallowValue)
+                {
+                    bool isNumber = true;
+                    for (int i = 0; i < finalEnumText.Length; i++)
+                    {
+                        if (!char.IsNumber(finalEnumText[i]))
+                        {
+                            isNumber = false;
+                            break;
+                        }
+                    }
+
+                    if (isNumber)
+                    {
+                        throw new FormatException("Integer string '{0}' is not allowed.".FormatWith(CultureInfo.InvariantCulture, enumText));
+                    }
+                }
             }
 
             return Enum.Parse(t, finalEnumText, true);
@@ -246,12 +267,15 @@ namespace Newtonsoft.Json.Utilities
             return finalName;
         }
 
-        private static string ResolvedEnumName(BidirectionalDictionary<string, string> map, string enumText)
+        private static bool TryResolvedEnumName(BidirectionalDictionary<string, string> map, string enumText, out string resolvedEnumName)
         {
-            string resolvedEnumName;
-            map.TryGetBySecond(enumText, out resolvedEnumName);
-            resolvedEnumName = resolvedEnumName ?? enumText;
-            return resolvedEnumName;
+            if (map.TryGetBySecond(enumText, out resolvedEnumName))
+            {
+                return true;
+            }
+
+            resolvedEnumName = null;
+            return false;
         }
     }
 }

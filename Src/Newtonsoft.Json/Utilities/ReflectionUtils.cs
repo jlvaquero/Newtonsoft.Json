@@ -25,7 +25,7 @@
 
 using System;
 using System.Collections.Generic;
-#if !(PORTABLE || PORTABLE40 || NET35 || NET20)
+#if !(PORTABLE || PORTABLE40 || NET35 || NET20) || NETSTANDARD1_1
 using System.Numerics;
 #endif
 using System.Reflection;
@@ -98,13 +98,13 @@ namespace Newtonsoft.Json.Utilities
         {
             ValidationUtils.ArgumentNotNull(propertyInfo, nameof(propertyInfo));
 
-            MethodInfo m = propertyInfo.GetGetMethod();
+            MethodInfo m = propertyInfo.GetGetMethod(true);
             if (m != null && m.IsVirtual)
             {
                 return true;
             }
 
-            m = propertyInfo.GetSetMethod();
+            m = propertyInfo.GetSetMethod(true);
             if (m != null && m.IsVirtual)
             {
                 return true;
@@ -117,13 +117,13 @@ namespace Newtonsoft.Json.Utilities
         {
             ValidationUtils.ArgumentNotNull(propertyInfo, nameof(propertyInfo));
 
-            MethodInfo m = propertyInfo.GetGetMethod();
+            MethodInfo m = propertyInfo.GetGetMethod(true);
             if (m != null)
             {
                 return m.GetBaseDefinition();
             }
 
-            m = propertyInfo.GetSetMethod();
+            m = propertyInfo.GetSetMethod(true);
             if (m != null)
             {
                 return m.GetBaseDefinition();
@@ -151,33 +151,39 @@ namespace Newtonsoft.Json.Utilities
             return (v != null) ? v.GetType() : null;
         }
 
-        public static string GetTypeName(Type t, FormatterAssemblyStyle assemblyFormat, SerializationBinder binder)
+        public static string GetTypeName(Type t, TypeNameAssemblyFormatHandling assemblyFormat, ISerializationBinder binder)
         {
-            string fullyQualifiedTypeName;
-#if !(NET20 || NET35)
-            if (binder != null)
-            {
-                string assemblyName, typeName;
-                binder.BindToName(t, out assemblyName, out typeName);
-                fullyQualifiedTypeName = typeName + (assemblyName == null ? "" : ", " + assemblyName);
-            }
-            else
-            {
-                fullyQualifiedTypeName = t.AssemblyQualifiedName;
-            }
-#else
-            fullyQualifiedTypeName = t.AssemblyQualifiedName;
-#endif
+            string fullyQualifiedTypeName = GetFullyQualifiedTypeName(t, binder);
 
             switch (assemblyFormat)
             {
-                case FormatterAssemblyStyle.Simple:
+                case TypeNameAssemblyFormatHandling.Simple:
                     return RemoveAssemblyDetails(fullyQualifiedTypeName);
-                case FormatterAssemblyStyle.Full:
+                case TypeNameAssemblyFormatHandling.Full:
                     return fullyQualifiedTypeName;
                 default:
                     throw new ArgumentOutOfRangeException();
             }
+        }
+
+        private static string GetFullyQualifiedTypeName(Type t, ISerializationBinder binder)
+        {
+            if (binder != null)
+            {
+                string assemblyName;
+                string typeName;
+                binder.BindToName(t, out assemblyName, out typeName);
+#if (NET20 || NET35)
+                // for older SerializationBinder implementations that didn't have BindToName
+                if (assemblyName == null & typeName == null)
+                {
+                    return t.AssemblyQualifiedName;
+                }
+#endif
+                return typeName + (assemblyName == null ? "" : ", " + assemblyName);
+            }
+
+            return t.AssemblyQualifiedName;
         }
 
         private static string RemoveAssemblyDetails(string fullyQualifiedTypeName)
@@ -656,7 +662,7 @@ namespace Newtonsoft.Json.Utilities
             // update: I think this is fixed in .NET 3.5 SP1 - leave this in for now...
             List<MemberInfo> distinctMembers = new List<MemberInfo>(targetMembers.Count);
 
-            foreach (var groupedMember in targetMembers.GroupBy(m => m.Name))
+            foreach (IGrouping<string, MemberInfo> groupedMember in targetMembers.GroupBy(m => m.Name))
             {
                 int count = groupedMember.Count();
                 IList<MemberInfo> members = groupedMember.ToList();
@@ -858,9 +864,12 @@ namespace Newtonsoft.Json.Utilities
         }
 #endif
 
-        public static void SplitFullyQualifiedTypeName(string fullyQualifiedTypeName, out string typeName, out string assemblyName)
+        public static TypeNameKey SplitFullyQualifiedTypeName(string fullyQualifiedTypeName)
         {
             int? assemblyDelimiterIndex = GetAssemblyDelimiterIndex(fullyQualifiedTypeName);
+
+            string typeName;
+            string assemblyName;
 
             if (assemblyDelimiterIndex != null)
             {
@@ -872,6 +881,8 @@ namespace Newtonsoft.Json.Utilities
                 typeName = fullyQualifiedTypeName;
                 assemblyName = null;
             }
+
+            return new TypeNameKey(assemblyName, typeName);
         }
 
         private static int? GetAssemblyDelimiterIndex(string fullyQualifiedTypeName)
@@ -1006,31 +1017,31 @@ namespace Newtonsoft.Json.Utilities
                 {
                     PropertyInfo subTypeProperty = propertyInfo;
 
-                    if (!IsPublic(subTypeProperty))
+                    if (!subTypeProperty.IsVirtual())
                     {
-                        // have to test on name rather than reference because instances are different
-                        // depending on the type that GetProperties was called on
-                        int index = initialProperties.IndexOf(p => p.Name == subTypeProperty.Name);
-                        if (index == -1)
+                        if (!IsPublic(subTypeProperty))
                         {
-                            initialProperties.Add(subTypeProperty);
-                        }
-                        else
-                        {
-                            PropertyInfo childProperty = initialProperties[index];
-                            // don't replace public child with private base
-                            if (!IsPublic(childProperty))
+                            // have to test on name rather than reference because instances are different
+                            // depending on the type that GetProperties was called on
+                            int index = initialProperties.IndexOf(p => p.Name == subTypeProperty.Name);
+                            if (index == -1)
                             {
-                                // replace nonpublic properties for a child, but gotten from
-                                // the parent with the one from the child
-                                // the property gotten from the child will have access to private getter/setter
-                                initialProperties[index] = subTypeProperty;
+                                initialProperties.Add(subTypeProperty);
+                            }
+                            else
+                            {
+                                PropertyInfo childProperty = initialProperties[index];
+                                // don't replace public child with private base
+                                if (!IsPublic(childProperty))
+                                {
+                                    // replace nonpublic properties for a child, but gotten from
+                                    // the parent with the one from the child
+                                    // the property gotten from the child will have access to private getter/setter
+                                    initialProperties[index] = subTypeProperty;
+                                }
                             }
                         }
-                    }
-                    else
-                    {
-                        if (!subTypeProperty.IsVirtual())
+                        else
                         {
                             int index = initialProperties.IndexOf(p => p.Name == subTypeProperty.Name
                                                                        && p.DeclaringType == subTypeProperty.DeclaringType);
@@ -1040,17 +1051,19 @@ namespace Newtonsoft.Json.Utilities
                                 initialProperties.Add(subTypeProperty);
                             }
                         }
-                        else
-                        {
-                            int index = initialProperties.IndexOf(p => p.Name == subTypeProperty.Name
-                                                                       && p.IsVirtual()
-                                                                       && p.GetBaseDefinition() != null
-                                                                       && p.GetBaseDefinition().DeclaringType.IsAssignableFrom(subTypeProperty.GetBaseDefinition().DeclaringType));
+                    }
+                    else
+                    {
+                        Type subTypePropertyDeclaringType = subTypeProperty.GetBaseDefinition()?.DeclaringType ?? subTypeProperty.DeclaringType;
 
-                            if (index == -1)
-                            {
-                                initialProperties.Add(subTypeProperty);
-                            }
+                        int index = initialProperties.IndexOf(p => p.Name == subTypeProperty.Name
+                                                                   && p.IsVirtual()
+                                                                   && (p.GetBaseDefinition()?.DeclaringType ?? p.DeclaringType).IsAssignableFrom(subTypePropertyDeclaringType));
+
+                        // don't add a virtual property that has an override
+                        if (index == -1)
+                        {
+                            initialProperties.Add(subTypeProperty);
                         }
                     }
                 }
@@ -1100,7 +1113,7 @@ namespace Newtonsoft.Json.Utilities
                     return 0m;
                 case PrimitiveTypeCode.DateTime:
                     return new DateTime();
-#if !(PORTABLE || PORTABLE40 || NET35 || NET20)
+#if !(PORTABLE || PORTABLE40 || NET35 || NET20) || NETSTANDARD1_1
                 case PrimitiveTypeCode.BigInteger:
                     return new BigInteger();
 #endif
@@ -1119,6 +1132,38 @@ namespace Newtonsoft.Json.Utilities
 
             // possibly use IL initobj for perf here?
             return Activator.CreateInstance(type);
+        }
+    }
+
+    internal struct TypeNameKey : IEquatable<TypeNameKey>
+    {
+        internal readonly string AssemblyName;
+        internal readonly string TypeName;
+
+        public TypeNameKey(string assemblyName, string typeName)
+        {
+            AssemblyName = assemblyName;
+            TypeName = typeName;
+        }
+
+        public override int GetHashCode()
+        {
+            return (AssemblyName?.GetHashCode() ?? 0) ^ (TypeName?.GetHashCode() ?? 0);
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (!(obj is TypeNameKey))
+            {
+                return false;
+            }
+
+            return Equals((TypeNameKey)obj);
+        }
+
+        public bool Equals(TypeNameKey other)
+        {
+            return (AssemblyName == other.AssemblyName && TypeName == other.TypeName);
         }
     }
 }

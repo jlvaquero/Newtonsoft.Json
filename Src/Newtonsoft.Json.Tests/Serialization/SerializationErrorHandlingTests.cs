@@ -35,11 +35,7 @@ using Newtonsoft.Json.Utilities.LinqBridge;
 #else
 using System.Linq;
 #endif
-#if NETFX_CORE
-using Microsoft.VisualStudio.TestPlatform.UnitTestFramework;
-using TestFixture = Microsoft.VisualStudio.TestPlatform.UnitTestFramework.TestClassAttribute;
-using Test = Microsoft.VisualStudio.TestPlatform.UnitTestFramework.TestMethodAttribute;
-#elif DNXCORE50
+#if DNXCORE50
 using Xunit;
 using Test = Xunit.FactAttribute;
 using Assert = Newtonsoft.Json.Tests.XUnitAssert;
@@ -74,11 +70,14 @@ namespace Newtonsoft.Json.Tests.Serialization
             var possibleMsgs = new[]
             {
                 "[1] - Error message for member 1 = An item with the same key has already been added.",
-                "[1] - Error message for member 1 = An element with the same key already exists in the dictionary." // mono
+                "[1] - Error message for member 1 = An element with the same key already exists in the dictionary.", // mono
+                "[1] - Error message for member 1 = An item with the same key has already been added. Key: Jim" // netcore
             };
             VersionKeyedCollection c = JsonConvert.DeserializeObject<VersionKeyedCollection>(json);
             Assert.AreEqual(1, c.Count);
             Assert.AreEqual(1, c.Messages.Count);
+
+            Console.WriteLine(c.Messages[0]);
             Assert.IsTrue(possibleMsgs.Any(m => m == c.Messages[0]), "Expected One of: " + Environment.NewLine + string.Join(Environment.NewLine, possibleMsgs) + Environment.NewLine + "Was: " + Environment.NewLine + c.Messages[0]);
         }
 
@@ -911,6 +910,56 @@ namespace Newtonsoft.Json.Tests.Serialization
             });
 
             Assert.AreEqual(string.Empty, result);
+        }
+
+        [Test]
+        public void IntegerToLarge_ReadNextValue()
+        {
+            IList<string> errorMessages = new List<string>();
+
+            JsonReader reader = new JsonTextReader(new StringReader(@"{
+  ""string1"": ""blah"",
+  ""int1"": 2147483648,
+  ""string2"": ""also blah"",
+  ""int2"": 2147483648,
+  ""string3"": ""more blah"",
+  ""dateTime1"": ""200NOTDATE"",
+  ""string4"": ""even more blah""
+}"));
+            JsonSerializerSettings settings = new JsonSerializerSettings();
+            settings.Error = (sender, args) =>
+            {
+                errorMessages.Add(args.ErrorContext.Error.Message);
+                args.ErrorContext.Handled = true;
+            };
+            JsonSerializer serializer = JsonSerializer.Create(settings);
+
+            DataModel data = new DataModel();
+            serializer.Populate(reader, data);
+
+            Assert.AreEqual("blah", data.String1);
+            Assert.AreEqual(0, data.Int1);
+            Assert.AreEqual("also blah", data.String2);
+            Assert.AreEqual(0, data.Int2);
+            Assert.AreEqual("more blah", data.String3);
+            Assert.AreEqual(default(DateTime), data.DateTime1);
+            Assert.AreEqual("even more blah", data.String4);
+
+            //Assert.AreEqual(2, errorMessages.Count);
+            Assert.AreEqual("JSON integer 2147483648 is too large or small for an Int32. Path 'int1', line 3, position 20.", errorMessages[0]);
+            Assert.AreEqual("JSON integer 2147483648 is too large or small for an Int32. Path 'int2', line 5, position 20.", errorMessages[1]);
+            Assert.AreEqual("Could not convert string to DateTime: 200NOTDATE. Path 'dateTime1', line 7, position 27.", errorMessages[2]);
+        }
+
+        private class DataModel
+        {
+            public string String1 { get; set; }
+            public int Int1 { get; set; }
+            public string String2 { get; set; }
+            public int Int2 { get; set; }
+            public string String3 { get; set; }
+            public DateTime DateTime1 { get; set; }
+            public string String4 { get; set; }
         }
     }
 

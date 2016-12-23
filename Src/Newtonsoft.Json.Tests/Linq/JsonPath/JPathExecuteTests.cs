@@ -26,16 +26,12 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-#if !(PORTABLE || PORTABLE40 || NET35 || NET20)
+#if !(PORTABLE || PORTABLE40 || NET35 || NET20) || NETSTANDARD1_1
 using System.Numerics;
 #endif
 using Newtonsoft.Json.Linq.JsonPath;
 using Newtonsoft.Json.Tests.Bson;
-#if NETFX_CORE
-using Microsoft.VisualStudio.TestPlatform.UnitTestFramework;
-using TestFixture = Microsoft.VisualStudio.TestPlatform.UnitTestFramework.TestClassAttribute;
-using Test = Microsoft.VisualStudio.TestPlatform.UnitTestFramework.TestMethodAttribute;
-#elif DNXCORE50
+#if DNXCORE50
 using Xunit;
 using Test = Xunit.FactAttribute;
 using Assert = Newtonsoft.Json.Tests.XUnitAssert;
@@ -55,6 +51,81 @@ namespace Newtonsoft.Json.Tests.Linq.JsonPath
     [TestFixture]
     public class JPathExecuteTests : TestFixtureBase
     {
+        [Test]
+        public void ScanQuoted()
+        {
+            string json = @"{
+    ""Node1"": {
+        ""Child1"": {
+            ""Name"": ""IsMe"",
+            ""TargetNode"": {
+                ""Prop1"": ""Val1"",
+                ""Prop2"": ""Val2""
+            }
+        },
+        ""My.Child.Node"": {
+            ""TargetNode"": {
+                ""Prop1"": ""Val1"",
+                ""Prop2"": ""Val2""
+            }
+        }
+    },
+    ""Node2"": {
+        ""TargetNode"": {
+            ""Prop1"": ""Val1"",
+            ""Prop2"": ""Val2""
+        }
+    }
+}";
+
+            JObject models = JObject.Parse(json);
+
+            int result = models.SelectTokens("$..['My.Child.Node']").Count();
+            Assert.AreEqual(1, result);
+
+            result = models.SelectTokens("..['My.Child.Node']").Count();
+            Assert.AreEqual(1, result);
+        }
+
+        [Test]
+        public void ScanMultipleQuoted()
+        {
+            string json = @"{
+    ""Node1"": {
+        ""Child1"": {
+            ""Name"": ""IsMe"",
+            ""TargetNode"": {
+                ""Prop1"": ""Val1"",
+                ""Prop2"": ""Val2""
+            }
+        },
+        ""My.Child.Node"": {
+            ""TargetNode"": {
+                ""Prop1"": ""Val3"",
+                ""Prop2"": ""Val4""
+            }
+        }
+    },
+    ""Node2"": {
+        ""TargetNode"": {
+            ""Prop1"": ""Val5"",
+            ""Prop2"": ""Val6""
+        }
+    }
+}";
+
+            JObject models = JObject.Parse(json);
+
+            var results = models.SelectTokens("$..['My.Child.Node','Prop1','Prop2']").ToList();
+            Assert.AreEqual("Val1", (string)results[0]);
+            Assert.AreEqual("Val2", (string)results[1]);
+            Assert.AreEqual(JTokenType.Object, results[2].Type);
+            Assert.AreEqual("Val3", (string)results[3]);
+            Assert.AreEqual("Val4", (string)results[4]);
+            Assert.AreEqual("Val5", (string)results[5]);
+            Assert.AreEqual("Val6", (string)results[6]);
+        }
+
         [Test]
         public void ParseWithEmptyArrayContent()
         {
@@ -652,7 +723,7 @@ namespace Newtonsoft.Json.Tests.Linq.JsonPath
             Assert.IsTrue(JToken.DeepEquals(new JObject(new JProperty("hi", 3)), t[1]));
         }
 
-#if !(PORTABLE || DNXCORE50 || PORTABLE40 || NET35 || NET20)
+#if !(PORTABLE || DNXCORE50 || PORTABLE40 || NET35 || NET20) || NETSTANDARD1_1
         [Test]
         public void GreaterQueryBigInteger()
         {
@@ -948,6 +1019,58 @@ namespace Newtonsoft.Json.Tests.Linq.JsonPath
 
             result = a.SelectTokens("$.[?(@.value)]").ToList();
             Assert.AreEqual(4, result.Count);
+        }
+
+        [Test]
+        public void RootInFilter()
+        {
+            string json = @"[
+   {
+      ""store"" : {
+         ""book"" : [
+            {
+               ""category"" : ""reference"",
+               ""author"" : ""Nigel Rees"",
+               ""title"" : ""Sayings of the Century"",
+               ""price"" : 8.95
+            },
+            {
+               ""category"" : ""fiction"",
+               ""author"" : ""Evelyn Waugh"",
+               ""title"" : ""Sword of Honour"",
+               ""price"" : 12.99
+            },
+            {
+               ""category"" : ""fiction"",
+               ""author"" : ""Herman Melville"",
+               ""title"" : ""Moby Dick"",
+               ""isbn"" : ""0-553-21311-3"",
+               ""price"" : 8.99
+            },
+            {
+               ""category"" : ""fiction"",
+               ""author"" : ""J. R. R. Tolkien"",
+               ""title"" : ""The Lord of the Rings"",
+               ""isbn"" : ""0-395-19395-8"",
+               ""price"" : 22.99
+            }
+         ],
+         ""bicycle"" : {
+            ""color"" : ""red"",
+            ""price"" : 19.95
+         }
+      },
+      ""expensive"" : 10
+   }
+]";
+
+            JArray a = JArray.Parse(json);
+
+            List<JToken> result = a.SelectTokens("$.[?($.store.bicycle.price < 20)]").ToList();
+            Assert.AreEqual(1, result.Count);
+
+            result = a.SelectTokens("$.[?($.store.bicycle.price < 10)]").ToList();
+            Assert.AreEqual(0, result.Count);
         }
     }
 }

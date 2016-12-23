@@ -32,11 +32,7 @@ using System.Text;
 using Newtonsoft.Json.Serialization;
 using Newtonsoft.Json.Tests.TestObjects;
 using Newtonsoft.Json.Utilities;
-#if NETFX_CORE
-using Microsoft.VisualStudio.TestPlatform.UnitTestFramework;
-using TestFixture = Microsoft.VisualStudio.TestPlatform.UnitTestFramework.TestClassAttribute;
-using Test = Microsoft.VisualStudio.TestPlatform.UnitTestFramework.TestMethodAttribute;
-#elif DNXCORE50
+#if DNXCORE50
 using Xunit;
 using Test = Xunit.FactAttribute;
 using Assert = Newtonsoft.Json.Tests.XUnitAssert;
@@ -71,7 +67,12 @@ namespace Newtonsoft.Json.Tests.Serialization
         [Test]
         public void GetAttributes_Property()
         {
-            PropertyInfo property = typeof(ReflectionTestObject).GetProperty("TestProperty");
+            PropertyInfo property;
+#if DNXCORE50
+            property = Newtonsoft.Json.Utilities.TypeExtensions.GetProperty(typeof(ReflectionTestObject), "TestProperty");
+#else
+            property = typeof(ReflectionTestObject).GetProperty("TestProperty");
+#endif
 
             ReflectionAttributeProvider provider = new ReflectionAttributeProvider(property);
 
@@ -85,7 +86,12 @@ namespace Newtonsoft.Json.Tests.Serialization
         [Test]
         public void GetAttributes_Field()
         {
-            FieldInfo field = (FieldInfo)typeof(ReflectionTestObject).GetField("TestField");
+            FieldInfo field;
+#if DNXCORE50
+            field = (FieldInfo)Newtonsoft.Json.Utilities.TypeExtensions.GetField(typeof(ReflectionTestObject), "TestField");
+#else
+            field = typeof(ReflectionTestObject).GetField("TestField");
+#endif
 
             ReflectionAttributeProvider provider = new ReflectionAttributeProvider(field);
 

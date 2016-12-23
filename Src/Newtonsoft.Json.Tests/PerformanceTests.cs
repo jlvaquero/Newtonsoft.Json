@@ -23,7 +23,7 @@
 // OTHER DEALINGS IN THE SOFTWARE.
 #endregion
 
-#if !(NET20 || NET35 || NET40 || NETFX_CORE || PORTABLE40 || DNXCORE50)
+#if !(NET20 || NET35 || NET40 || PORTABLE40 || DNXCORE50)
 using System.Xml;
 using System;
 using System.Collections;
@@ -181,6 +181,14 @@ namespace Newtonsoft.Json.Tests
             public List<Friend> friends { get; set; }
             public string greeting { get; set; }
             public string favoriteFruit { get; set; }
+        }
+
+        [Test]
+        public void DeserializeDoubleList()
+        {
+            var json = new JArray(Enumerable.Range(0, 5000).Select(i => (double)i)).ToString(Formatting.None);
+
+            BenchmarkDeserializeMethod<IList<double>>(SerializeMethod.JsonNet, json, 1000);
         }
 
         [Test]
@@ -503,7 +511,7 @@ If attributes are not mentioned, default values are used in each case.
             {
                 for (int i = 0; i < interations; i++)
                 {
-                    using (StringWriter w = StringUtils.CreateStringWriter(StringUtils.GetLength(text) ?? 16))
+                    using (StringWriter w = StringUtils.CreateStringWriter(text.Length))
                     {
                         char[] buffer = null;
                         JavaScriptUtils.WriteEscapedJavaScriptString(w, text, '"', true, JavaScriptUtils.DoubleQuoteCharEscapeFlags, StringEscapeHandling.Default, null, ref buffer);

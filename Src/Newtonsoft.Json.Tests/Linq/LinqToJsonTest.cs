@@ -27,11 +27,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
-#if NETFX_CORE
-using Microsoft.VisualStudio.TestPlatform.UnitTestFramework;
-using TestFixture = Microsoft.VisualStudio.TestPlatform.UnitTestFramework.TestClassAttribute;
-using Test = Microsoft.VisualStudio.TestPlatform.UnitTestFramework.TestMethodAttribute;
-#elif DNXCORE50
+#if DNXCORE50
 using Xunit;
 using Test = Xunit.FactAttribute;
 using Assert = Newtonsoft.Json.Tests.XUnitAssert;
@@ -42,6 +38,7 @@ using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Tests.Serialization;
 using Newtonsoft.Json.Tests.TestObjects;
+using Newtonsoft.Json.Tests.TestObjects.Organization;
 #if NET20
 using Newtonsoft.Json.Utilities.LinqBridge;
 #else
@@ -1509,6 +1506,40 @@ keyword such as type of business.""
 
             string json = t.ToString();
             return json;
+        }
+
+        [Test]
+        public void HashCodeTests()
+        {
+            JObject o1 = new JObject
+            {
+                ["prop"] = 1
+            };
+            JObject o2 = new JObject
+            {
+                ["prop"] = 1
+            };
+
+            Assert.IsFalse(ReferenceEquals(o1, o2));
+            Assert.IsFalse(Equals(o1, o2));
+            Assert.IsFalse(o1.GetHashCode() == o2.GetHashCode());
+            Assert.IsTrue(o1.GetDeepHashCode() == o2.GetDeepHashCode());
+            Assert.IsTrue(JToken.DeepEquals(o1, o2));
+
+            JArray a1 = new JArray
+            {
+                1
+            };
+            JArray a2 = new JArray
+            {
+                1
+            };
+
+            Assert.IsFalse(ReferenceEquals(a1, a2));
+            Assert.IsFalse(Equals(a1, a2));
+            Assert.IsFalse(a1.GetHashCode() == a2.GetHashCode());
+            Assert.IsTrue(a1.GetDeepHashCode() == a2.GetDeepHashCode());
+            Assert.IsTrue(JToken.DeepEquals(a1, a2));
         }
     }
 }

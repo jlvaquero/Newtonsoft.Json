@@ -26,11 +26,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-#if NETFX_CORE
-using Microsoft.VisualStudio.TestPlatform.UnitTestFramework;
-using TestFixture = Microsoft.VisualStudio.TestPlatform.UnitTestFramework.TestClassAttribute;
-using Test = Microsoft.VisualStudio.TestPlatform.UnitTestFramework.TestMethodAttribute;
-#elif DNXCORE50
+#if DNXCORE50
 using Xunit;
 using Test = Xunit.FactAttribute;
 using Assert = Newtonsoft.Json.Tests.XUnitAssert;
@@ -39,7 +35,7 @@ using NUnit.Framework;
 #endif
 using Newtonsoft.Json;
 using System.IO;
-#if !(NET20 || NET35 || PORTABLE40 || PORTABLE)
+#if !(NET20 || NET35 || PORTABLE40 || PORTABLE) || NETSTANDARD1_1
 using System.Numerics;
 #endif
 using Newtonsoft.Json.Linq;
@@ -51,7 +47,7 @@ namespace Newtonsoft.Json.Tests.Linq
     [TestFixture]
     public class JTokenReaderTest : TestFixtureBase
     {
-#if !(NET20 || NET35 || PORTABLE40 || PORTABLE)
+#if !(NET20 || NET35 || PORTABLE40 || PORTABLE) || NETSTANDARD1_1
         [Test]
         public void ConvertBigIntegerToDouble()
         {
@@ -876,7 +872,7 @@ namespace Newtonsoft.Json.Tests.Linq
             Assert.AreEqual(1d, reader.ReadAsDouble());
         }
 
-#if !(NET20 || NET35 || PORTABLE40 || PORTABLE)
+#if !(NET20 || NET35 || PORTABLE40 || PORTABLE) || NETSTANDARD1_1
         [Test]
         public void ReadAsBoolean_BigInteger_Success()
         {

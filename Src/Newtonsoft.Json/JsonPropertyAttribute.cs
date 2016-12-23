@@ -24,6 +24,7 @@
 #endregion
 
 using System;
+using Newtonsoft.Json.Serialization;
 
 namespace Newtonsoft.Json
 {
@@ -48,21 +49,42 @@ namespace Newtonsoft.Json
         internal TypeNameHandling? _itemTypeNameHandling;
 
         /// <summary>
-        /// Gets or sets the converter used when serializing the property's collection items.
+        /// Gets or sets the <see cref="JsonConverter"/> used when serializing the property's collection items.
         /// </summary>
-        /// <value>The collection's items converter.</value>
+        /// <value>The collection's items <see cref="JsonConverter"/>.</value>
         public Type ItemConverterType { get; set; }
 
         /// <summary>
-        /// The parameter list to use when constructing the JsonConverter described by ItemConverterType.
-        /// If null, the default constructor is used.
-        /// When non-null, there must be a constructor defined in the JsonConverter that exactly matches the number,
+        /// The parameter list to use when constructing the <see cref="JsonConverter"/> described by <see cref="ItemConverterType"/>.
+        /// If <c>null</c>, the default constructor is used.
+        /// When non-<c>null</c>, there must be a constructor defined in the <see cref="JsonConverter"/> that exactly matches the number,
         /// order, and type of these parameters.
         /// </summary>
         /// <example>
+        /// <code>
         /// [JsonProperty(ItemConverterType = typeof(MyContainerConverter), ItemConverterParameters = new object[] { 123, "Four" })]
+        /// </code>
         /// </example>
         public object[] ItemConverterParameters { get; set; }
+
+        /// <summary>
+        /// Gets or sets the <see cref="Type"/> of the <see cref="NamingStrategy"/>.
+        /// </summary>
+        /// <value>The <see cref="Type"/> of the <see cref="NamingStrategy"/>.</value>
+        public Type NamingStrategyType { get; set; }
+
+        /// <summary>
+        /// The parameter list to use when constructing the <see cref="NamingStrategy"/> described by NamingStrategyType.  
+        /// If <c>null</c>, the default constructor is used.
+        /// When non-<c>null</c>, there must be a constructor defined in the <see cref="NamingStrategy"/> that exactly matches the number,
+        /// order, and type of these parameters.
+        /// </summary>
+        /// <example>
+        /// <code>
+        /// [JsonProperty(NamingStrategyType = typeof(MyNamingStrategy), NamingStrategyParameters = new object[] { 123, "Four" })]
+        /// </code>
+        /// </example>
+        public object[] NamingStrategyParameters { get; set; }
 
         /// <summary>
         /// Gets or sets the null value handling used when serializing this property.

@@ -35,11 +35,7 @@ using System.Text;
 using System.Xml;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Linq;
-#if NETFX_CORE
-using Microsoft.VisualStudio.TestPlatform.UnitTestFramework;
-using TestFixture = Microsoft.VisualStudio.TestPlatform.UnitTestFramework.TestClassAttribute;
-using Test = Microsoft.VisualStudio.TestPlatform.UnitTestFramework.TestMethodAttribute;
-#elif DNXCORE50
+#if DNXCORE50
 using Xunit;
 using Test = Xunit.FactAttribute;
 using Assert = Newtonsoft.Json.Tests.XUnitAssert;
@@ -54,20 +50,22 @@ using ErrorEventArgs = Newtonsoft.Json.Serialization.ErrorEventArgs;
 
 namespace Newtonsoft.Json.Tests.Documentation
 {
-    public class ConvertingJsonAndXmlTests
+    [TestFixture]
+    public class ConvertingJsonAndXmlTests : TestFixtureBase
     {
+        [Test]
         public void SerializeXmlNode()
         {
             #region SerializeXmlNode
             string xml = @"<?xml version='1.0' standalone='no'?>
             <root>
               <person id='1'>
-              <name>Alan</name>
-              <url>http://www.google.com</url>
+                <name>Alan</name>
+                <url>http://www.google.com</url>
               </person>
               <person id='2'>
-              <name>Louis</name>
-              <url>http://www.yahoo.com</url>
+                <name>Louis</name>
+                <url>http://www.yahoo.com</url>
               </person>
             </root>";
 
@@ -98,6 +96,7 @@ namespace Newtonsoft.Json.Tests.Documentation
             #endregion
         }
 
+        [Test]
         public void DeserializeXmlNode()
         {
             #region DeserializeXmlNode
@@ -126,17 +125,18 @@ namespace Newtonsoft.Json.Tests.Documentation
             // <?xml version="1.0" standalone="no"?>
             // <root>
             //   <person id="1">
-            //   <name>Alan</name>
-            //   <url>http://www.google.com</url>
+            //     <name>Alan</name>
+            //     <url>http://www.google.com</url>
             //   </person>
             //   <person id="2">
-            //   <name>Louis</name>
-            //   <url>http://www.yahoo.com</url>
+            //     <name>Louis</name>
+            //     <url>http://www.yahoo.com</url>
             //   </person>
             // </root>
             #endregion
         }
 
+        [Test]
         public void ForceJsonArray()
         {
             #region ForceJsonArray

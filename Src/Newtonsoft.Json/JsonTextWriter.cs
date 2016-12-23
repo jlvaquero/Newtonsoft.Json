@@ -25,7 +25,7 @@
 
 using System;
 using System.Globalization;
-#if !(NET20 || NET35 || PORTABLE40 || PORTABLE)
+#if !(NET20 || NET35 || PORTABLE40 || PORTABLE) || NETSTANDARD1_1
 using System.Numerics;
 #endif
 using System.IO;
@@ -140,7 +140,7 @@ namespace Newtonsoft.Json
         }
 
         /// <summary>
-        /// Creates an instance of the <c>JsonWriter</c> class using the specified <see cref="TextWriter"/>. 
+        /// Initializes a new instance of the <c>JsonTextWriter</c> class using the specified <see cref="TextWriter"/>.
         /// </summary>
         /// <param name="textWriter">The <c>TextWriter</c> to write to.</param>
         public JsonTextWriter(TextWriter textWriter)
@@ -356,7 +356,7 @@ namespace Newtonsoft.Json
         /// <param name="value">The <see cref="Object"/> value to write.</param>
         public override void WriteValue(object value)
         {
-#if !(NET20 || NET35 || PORTABLE || PORTABLE40)
+#if !(NET20 || NET35 || PORTABLE || PORTABLE40) || NETSTANDARD1_1
             if (value is BigInteger)
             {
                 InternalWriteValue(JsonToken.Integer);
@@ -748,7 +748,7 @@ namespace Newtonsoft.Json
         #endregion
 
         /// <summary>
-        /// Writes out a comment <code>/*...*/</code> containing the specified text. 
+        /// Writes a comment <c>/*...*/</c> containing the specified text. 
         /// </summary>
         /// <param name="text">Text to place inside the comment.</param>
         public override void WriteComment(string text)
@@ -761,7 +761,7 @@ namespace Newtonsoft.Json
         }
 
         /// <summary>
-        /// Writes out the given white space.
+        /// Writes the given white space.
         /// </summary>
         /// <param name="ws">The string of white space characters.</param>
         public override void WriteWhitespace(string ws)

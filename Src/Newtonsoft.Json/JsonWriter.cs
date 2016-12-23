@@ -26,7 +26,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-#if !(NET20 || NET35 || PORTABLE40 || PORTABLE)
+#if !(NET20 || NET35 || PORTABLE40 || PORTABLE) || NETSTANDARD1_1
 using System.Numerics;
 #endif
 using Newtonsoft.Json.Utilities;
@@ -78,9 +78,9 @@ namespace Newtonsoft.Json
 
         internal static State[][] BuildStateArray()
         {
-            var allStates = StateArrayTempate.ToList();
-            var errorStates = StateArrayTempate[0];
-            var valueStates = StateArrayTempate[7];
+            List<State[]> allStates = StateArrayTempate.ToList();
+            State[] errorStates = StateArrayTempate[0];
+            State[] valueStates = StateArrayTempate[7];
 
             foreach (JsonToken valueToken in EnumUtils.GetValues(typeof(JsonToken)))
             {
@@ -123,8 +123,8 @@ namespace Newtonsoft.Json
         /// <see cref="TextReader"/> should be closed when the writer is closed.
         /// </summary>
         /// <value>
-        /// true to close the underlying stream or <see cref="TextReader"/> when
-        /// the writer is closed; otherwise false. The default is true.
+        /// <c>true</c> to close the underlying stream or <see cref="TextReader"/> when
+        /// the writer is closed; otherwise <c>false</c>. The default is <c>true</c>.
         /// </value>
         public bool CloseOutput { get; set; }
 
@@ -222,7 +222,7 @@ namespace Newtonsoft.Json
         private GuidHandling _guidHandling;
 
         /// <summary>
-        /// Indicates how JSON text output is formatted.
+        /// Gets or sets a value indicating how JSON text output should be formatted.
         /// </summary>
         public Formatting Formatting
         {
@@ -239,7 +239,7 @@ namespace Newtonsoft.Json
         }
 
         /// <summary>
-        /// Get or set how dates are written to JSON text.
+        /// Gets or sets how dates are written to JSON text.
         /// </summary>
         public DateFormatHandling DateFormatHandling
         {
@@ -256,7 +256,7 @@ namespace Newtonsoft.Json
         }
 
         /// <summary>
-        /// Get or set how <see cref="DateTime"/> time zones are handling when writing JSON text.
+        /// Gets or sets how <see cref="DateTime"/> time zones are handled when writing JSON text.
         /// </summary>
         public DateTimeZoneHandling DateTimeZoneHandling
         {
@@ -290,6 +290,7 @@ namespace Newtonsoft.Json
 
         /// <summary>
         /// Get or set how strings are escaped when writing JSON text.
+        /// Gets or sets how strings are escaped when writing JSON text.
         /// </summary>
         public StringEscapeHandling StringEscapeHandling
         {
@@ -312,7 +313,7 @@ namespace Newtonsoft.Json
         }
 
         /// <summary>
-        /// Get or set how special floating point numbers, e.g. <see cref="F:System.Double.NaN"/>,
+        /// Gets or sets how special floating point numbers, e.g. <see cref="F:System.Double.NaN"/>,
         /// <see cref="F:System.Double.PositiveInfinity"/> and <see cref="F:System.Double.NegativeInfinity"/>,
         /// are written to JSON text.
         /// </summary>
@@ -331,7 +332,7 @@ namespace Newtonsoft.Json
         }
 
         /// <summary>
-        /// Get or set how <see cref="DateTime"/> and <see cref="DateTimeOffset"/> values are formatting when writing JSON text.
+        /// Gets or sets how <see cref="DateTime"/> and <see cref="DateTimeOffset"/> values are formatted when writing JSON text.
         /// </summary>
         public string DateFormatString
         {
@@ -349,7 +350,7 @@ namespace Newtonsoft.Json
         }
 
         /// <summary>
-        /// Creates an instance of the <c>JsonWriter</c> class. 
+        /// Initializes a new instance of the <see cref="JsonWriter"/> class.
         /// </summary>
         protected JsonWriter()
         {
@@ -468,7 +469,7 @@ namespace Newtonsoft.Json
         }
 
         /// <summary>
-        /// Writes the property name of a name/value pair on a JSON object.
+        /// Writes the property name of a name/value pair of a JSON object.
         /// </summary>
         /// <param name="name">The name of the property.</param>
         public virtual void WritePropertyName(string name)
@@ -477,7 +478,7 @@ namespace Newtonsoft.Json
         }
 
         /// <summary>
-        /// Writes the property name of a name/value pair on a JSON object.
+        /// Writes the property name of a name/value pair of a JSON object.
         /// </summary>
         /// <param name="name">The name of the property.</param>
         /// <param name="escape">A flag to indicate whether the text should be escaped when it is written as a JSON property name.</param>
@@ -522,7 +523,8 @@ namespace Newtonsoft.Json
         /// <param name="value">
         /// The value to write.
         /// A value is only required for tokens that have an associated value, e.g. the <see cref="String"/> property name for <see cref="JsonToken.PropertyName"/>.
-        /// A null value can be passed to the method for token's that don't have a value, e.g. <see cref="JsonToken.StartObject"/>.</param>
+        /// <c>null</c> can be passed to the method for tokens that don't have a value, e.g. <see cref="JsonToken.StartObject"/>.
+        /// </param>
         public void WriteToken(JsonToken token, object value)
         {
             switch (token)
@@ -549,7 +551,7 @@ namespace Newtonsoft.Json
                     break;
                 case JsonToken.Integer:
                     ValidationUtils.ArgumentNotNull(value, nameof(value));
-#if !(NET20 || NET35 || PORTABLE || PORTABLE40)
+#if !(NET20 || NET35 || PORTABLE || PORTABLE40) || NETSTANDARD1_1
                     if (value is BigInteger)
                     {
                         WriteValue((BigInteger)value);
@@ -1409,7 +1411,7 @@ namespace Newtonsoft.Json
             }
             else
             {
-#if !(NET20 || NET35 || PORTABLE || PORTABLE40)
+#if !(NET20 || NET35 || PORTABLE || PORTABLE40) || NETSTANDARD1_1
                 // this is here because adding a WriteValue(BigInteger) to JsonWriter will
                 // mean the user has to add a reference to System.Numerics.dll
                 if (value is BigInteger)
@@ -1424,7 +1426,7 @@ namespace Newtonsoft.Json
         #endregion
 
         /// <summary>
-        /// Writes out a comment <code>/*...*/</code> containing the specified text. 
+        /// Writes a comment <c>/*...*/</c> containing the specified text.
         /// </summary>
         /// <param name="text">Text to place inside the comment.</param>
         public virtual void WriteComment(string text)
@@ -1433,7 +1435,7 @@ namespace Newtonsoft.Json
         }
 
         /// <summary>
-        /// Writes out the given white space.
+        /// Writes the given white space.
         /// </summary>
         /// <param name="ws">The string of white space characters.</param>
         public virtual void WriteWhitespace(string ws)
@@ -1448,7 +1450,7 @@ namespace Newtonsoft.Json
         }
 
         /// <summary>
-        /// Releases unmanaged and - optionally - managed resources
+        /// Releases unmanaged and - optionally - managed resources.
         /// </summary>
         /// <param name="disposing"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
         protected virtual void Dispose(bool disposing)
@@ -1567,7 +1569,7 @@ namespace Newtonsoft.Json
                 case PrimitiveTypeCode.TimeSpanNullable:
                     writer.WriteValue((value == null) ? (TimeSpan?)null : (TimeSpan)value);
                     break;
-#if !(PORTABLE || PORTABLE40 || NET35 || NET20)
+#if !(PORTABLE || PORTABLE40 || NET35 || NET20) || NETSTANDARD1_1
                 case PrimitiveTypeCode.BigInteger:
                     // this will call to WriteValue(object)
                     writer.WriteValue((BigInteger)value);
@@ -1624,7 +1626,7 @@ namespace Newtonsoft.Json
         }
 
         /// <summary>
-        /// Sets the state of the JsonWriter,
+        /// Sets the state of the JsonWriter.
         /// </summary>
         /// <param name="token">The JsonToken being written.</param>
         /// <param name="value">The value being written.</param>

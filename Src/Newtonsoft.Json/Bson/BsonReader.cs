@@ -35,7 +35,7 @@ using Newtonsoft.Json.Linq;
 namespace Newtonsoft.Json.Bson
 {
     /// <summary>
-    /// Represents a reader that provides fast, non-cached, forward-only access to serialized JSON data.
+    /// Represents a reader that provides fast, non-cached, forward-only access to serialized BSON data.
     /// </summary>
     public class BsonReader : JsonReader
     {
@@ -85,7 +85,7 @@ namespace Newtonsoft.Json.Bson
         }
 
         /// <summary>
-        /// Gets or sets a value indicating whether binary data reading should compatible with incorrect Json.NET 3.5 written binary.
+        /// Gets or sets a value indicating whether binary data reading should be compatible with incorrect Json.NET 3.5 written binary.
         /// </summary>
         /// <value>
         /// 	<c>true</c> if binary data reading will be compatible with incorrect Json.NET 3.5 written binary; otherwise, <c>false</c>.
@@ -178,7 +178,7 @@ namespace Newtonsoft.Json.Bson
         /// Reads the next JSON token from the stream.
         /// </summary>
         /// <returns>
-        /// true if the next token was read successfully; false if there are no more tokens to read.
+        /// <c>true</c> if the next token was read successfully; <c>false</c> if there are no more tokens to read.
         /// </returns>
         public override bool Read()
         {

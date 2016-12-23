@@ -27,7 +27,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
-#if !(NET20 || NET35 || PORTABLE40 || PORTABLE)
+#if !(NET20 || NET35 || PORTABLE40 || PORTABLE) || NETSTANDARD1_1
 using System.Numerics;
 #endif
 using System.Text;
@@ -38,7 +38,7 @@ using System.Globalization;
 namespace Newtonsoft.Json.Bson
 {
     /// <summary>
-    /// Represents a writer that provides a fast, non-cached, forward-only way of generating JSON data.
+    /// Represents a writer that provides a fast, non-cached, forward-only way of generating BSON data.
     /// </summary>
     public class BsonWriter : JsonWriter
     {
@@ -103,7 +103,7 @@ namespace Newtonsoft.Json.Bson
         }
 
         /// <summary>
-        /// Writes out a comment <code>/*...*/</code> containing the specified text.
+        /// Writes a comment <c>/*...*/</c> containing the specified text.
         /// </summary>
         /// <param name="text">Text to place inside the comment.</param>
         public override void WriteComment(string text)
@@ -232,7 +232,7 @@ namespace Newtonsoft.Json.Bson
         /// <param name="value">The <see cref="Object"/> value to write.</param>
         public override void WriteValue(object value)
         {
-#if !(NET20 || NET35 || PORTABLE || PORTABLE40)
+#if !(NET20 || NET35 || PORTABLE || PORTABLE40) || NETSTANDARD1_1
             if (value is BigInteger)
             {
                 InternalWriteValue(JsonToken.Integer);

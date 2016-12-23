@@ -25,16 +25,12 @@
 
 using System;
 using System.Collections.Generic;
-#if !(NET20 || NET35 || PORTABLE)
+#if !(NET20 || NET35 || PORTABLE) || NETSTANDARD1_1
 using System.Numerics;
 #endif
 using System.Text;
 using System.Text.RegularExpressions;
-#if NETFX_CORE
-using Microsoft.VisualStudio.TestPlatform.UnitTestFramework;
-using TestFixture = Microsoft.VisualStudio.TestPlatform.UnitTestFramework.TestClassAttribute;
-using Test = Microsoft.VisualStudio.TestPlatform.UnitTestFramework.TestMethodAttribute;
-#elif DNXCORE50
+#if DNXCORE50
 using Xunit;
 using Test = Xunit.FactAttribute;
 using Assert = Newtonsoft.Json.Tests.XUnitAssert;
@@ -47,6 +43,7 @@ using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Utilities;
 using Newtonsoft.Json.Tests.TestObjects;
 using System.Globalization;
+using Newtonsoft.Json.Tests.TestObjects.GeoCoding;
 #if NET20
 using Newtonsoft.Json.Utilities.LinqBridge;
 #else
@@ -800,7 +797,7 @@ namespace Newtonsoft.Json.Tests.Bson
             Assert.AreEqual(c.AGuid, c2.AGuid.ToString());
         }
 
-#if !(NET20 || NET35 || PORTABLE || PORTABLE40)
+#if !(NET20 || NET35 || PORTABLE || PORTABLE40) || NETSTANDARD1_1
         [Test]
         public void WriteBigInteger()
         {

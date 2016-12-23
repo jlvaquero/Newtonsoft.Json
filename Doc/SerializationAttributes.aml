@@ -40,14 +40,19 @@
     
     <section>
       <title>Json.NET Serialization Attributes</title>
+      <content>
+        <autoOutline />
+    </content>
         <sections>
-    <section>
+    <section address="JsonObjectAttribute">
       <title>JsonObjectAttribute</title>
       <content>
         <para>The MemberSerialization flag on this attribute specifies whether member serialization is opt-in
         (a member must have the JsonProperty or DataMember attribute to be serialized), opt-out (everything is
         serialized by default but can be ignored with the JsonIgnoreAttribute, Json.NET's default behavior) or
         fields (all public and private fields are serialized and properties are ignored).</para>
+        <para>The NamingStrategy setting on this attributes can be set to a <codeEntityReference>T:Newtonsoft.Json.Serialization.NamingStrategy</codeEntityReference>
+        type that specifies how property names are serialized.</para>
         <para>Json.NET serializes .NET classes that implement IEnumerable as a JSON array populated with the
         IEnumerable values. Placing the <codeEntityReference>T:Newtonsoft.Json.JsonObjectAttribute</codeEntityReference>
         overrides this behavior and forces the serializer to serialize the class's fields and properties.</para>
@@ -57,7 +62,7 @@
       </content>
     </section>
         
-    <section>
+    <section address="JsonArrayAttributeJsonDictionaryAttribute">
       <title>JsonArrayAttribute/JsonDictionaryAttribute</title>
       <content>
         <para>The <codeEntityReference>T:Newtonsoft.Json.JsonArrayAttribute</codeEntityReference> and
@@ -67,7 +72,7 @@
       </content>
     </section>
         
-    <section>
+    <section address="JsonPropertyAttribute">
       <title>JsonPropertyAttribute</title>
       <content>
         <para>JsonPropertyAttribute has a number of uses:</para>
@@ -77,6 +82,7 @@
   <listItem><para>JsonPropertyAttribute indicates that a property should be serialized when member serialization is set to opt-in.</para></listItem>
   <listItem><para>It includes non-public properties in serialization and deserialization.</para></listItem>
   <listItem><para>It can be used to customize type name, reference, null, and default value handling for the property value.</para></listItem>
+  <listItem><para>It can be used to customize the <codeEntityReference>T:Newtonsoft.Json.Serialization.NamingStrategy</codeEntityReference> of the serialized property name.</para></listItem>
   <listItem><para>It can be used to customize the property's collection items JsonConverter, type name handling, and reference handling.</para></listItem>
 </list>
         
@@ -85,7 +91,7 @@
       </content>
     </section>
         
-    <section>
+    <section address="JsonIgnoreAttribute">
       <title>JsonIgnoreAttribute</title>
       <content>
         <para>Excludes a field or property from serialization.</para>
@@ -93,7 +99,7 @@
       </content>
     </section>
         
-    <section>
+    <section address="JsonConverterAttribute">
       <title>JsonConverterAttribute</title>
       <content>
         <para>The <codeEntityReference>T:Newtonsoft.Json.JsonConverterAttribute</codeEntityReference> specifies which
@@ -115,19 +121,23 @@
       </content>
     </section>
         
-    <section>
+    <section address="JsonExtensionDataAttribute">
       <title>JsonExtensionDataAttribute</title>
       <content>
         <para>The <codeEntityReference>T:Newtonsoft.Json.JsonExtensionDataAttribute</codeEntityReference> instructs the
         <codeEntityReference>T:Newtonsoft.Json.JsonSerializer</codeEntityReference> to deserialize properties with no matching field or property
         on the type into the specified collection. During serialization the values in this collection are written back to the instance's JSON object.</para>
+
+<alert class="note">
+  <para>All extension data values will be written during serialization, even if a property the same name has already been written.</para>
+</alert>        
         <para>This example shows the JsonExtensionDataAttribute being applied to a field, unmatched JSON properties being added to the field's collection during deserialization.</para>
         <code lang="cs" source="..\Src\Newtonsoft.Json.Tests\Documentation\Samples\Serializer\DeserializeExtensionData.cs" region="Types" title="Types" />
         <code lang="cs" source="..\Src\Newtonsoft.Json.Tests\Documentation\Samples\Serializer\DeserializeExtensionData.cs" region="Usage" title="Usage" />
       </content>
     </section>
         
-    <section>
+    <section address="JsonConstructorAttribute">
       <title>JsonConstructorAttribute</title>
       <content>
         <para>The <codeEntityReference>T:Newtonsoft.Json.JsonConstructorAttribute</codeEntityReference> instructs the

@@ -24,14 +24,13 @@
 #endregion
 
 #if !PORTABLE40
-#if !(PORTABLE || NET20 || NET35)
+#if !(PORTABLE || NET20 || NET35) || NETSTANDARD1_1
 using System.Numerics;
 #endif
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Xml;
-using System.Reflection;
 using Newtonsoft.Json.Serialization;
 #if !(NET20 || PORTABLE40)
 using System.Xml.Linq;
@@ -987,9 +986,9 @@ namespace Newtonsoft.Json.Converters
         private const string JsonNamespaceUri = "http://james.newtonking.com/projects/json";
 
         /// <summary>
-        /// Gets or sets the name of the root element to insert when deserializing to XML if the JSON structure has produces multiple root elements.
+        /// Gets or sets the name of the root element to insert when deserializing to XML if the JSON structure has produced multiple root elements.
         /// </summary>
-        /// <value>The name of the deserialize root element.</value>
+        /// <value>The name of the deserialized root element.</value>
         public string DeserializeRootElementName { get; set; }
 
         /// <summary>
@@ -1539,7 +1538,7 @@ namespace Newtonsoft.Json.Converters
                 string attributeName = propertyName.Substring(1);
                 string attributePrefix = MiscellaneousUtils.GetPrefix(attributeName);
 
-                AddAttribute(reader, document, currentNode, attributeName, manager, attributePrefix);
+                AddAttribute(reader, document, currentNode, propertyName, attributeName, manager, attributePrefix);
                 return;
             }
 
@@ -1558,7 +1557,7 @@ namespace Newtonsoft.Json.Converters
                     case JsonTypeReflector.ValuePropertyName:
                         string attributeName = propertyName.Substring(1);
                         string attributePrefix = manager.LookupPrefix(JsonNamespaceUri);
-                        AddAttribute(reader, document, currentNode, attributeName, manager, attributePrefix);
+                        AddAttribute(reader, document, currentNode, propertyName, attributeName, manager, attributePrefix);
                         return;
                 }
             }
@@ -1615,8 +1614,13 @@ namespace Newtonsoft.Json.Converters
             }
         }
 
-        private static void AddAttribute(JsonReader reader, IXmlDocument document, IXmlNode currentNode, string attributeName, XmlNamespaceManager manager, string attributePrefix)
+        private static void AddAttribute(JsonReader reader, IXmlDocument document, IXmlNode currentNode, string propertyName, string attributeName, XmlNamespaceManager manager, string attributePrefix)
         {
+            if (currentNode.NodeType == XmlNodeType.Document)
+            {
+                throw JsonSerializationException.Create(reader, "JSON root object has property '{0}' that will be converted to an attribute. A root object cannot have any attribute properties. Consider specifing a DeserializeRootElementName.".FormatWith(CultureInfo.InvariantCulture, propertyName));
+            }
+
             string encodedName = XmlConvert.EncodeName(attributeName);
             string attributeValue = reader.Value.ToString();
 
@@ -1635,7 +1639,7 @@ namespace Newtonsoft.Json.Converters
             }
             else if (reader.TokenType == JsonToken.Integer)
             {
-#if !(NET20 || NET35 || PORTABLE || PORTABLE40)
+#if !(NET20 || NET35 || PORTABLE || PORTABLE40) || NETSTANDARD1_1
                 if (reader.Value is BigInteger)
                 {
                     return ((BigInteger)reader.Value).ToString(CultureInfo.InvariantCulture);
@@ -1674,7 +1678,7 @@ namespace Newtonsoft.Json.Converters
 #if !PORTABLE
                 return XmlConvert.ToString(d, DateTimeUtils.ToSerializationMode(d.Kind));
 #else
-                return XmlConvert.ToString(d);
+                return XmlConvert.ToString(d, DateTimeUtils.ToDateTimeFormat(d.Kind));
 #endif
             }
             else if (reader.TokenType == JsonToken.Null)
@@ -2000,11 +2004,11 @@ namespace Newtonsoft.Json.Converters
         }
 
         /// <summary>
-        /// Checks if the attributeName is a namespace attribute.
+        /// Checks if the <paramref name="attributeName"/> is a namespace attribute.
         /// </summary>
         /// <param name="attributeName">Attribute name to test.</param>
         /// <param name="prefix">The attribute name prefix if it has one, otherwise an empty string.</param>
-        /// <returns>True if attribute name is for a namespace attribute, otherwise false.</returns>
+        /// <returns><c>true</c> if attribute name is for a namespace attribute, otherwise <c>false</c>.</returns>
         private bool IsNamespaceAttribute(string attributeName, out string prefix)
         {
             if (attributeName.StartsWith("xmlns", StringComparison.Ordinal))

@@ -67,7 +67,6 @@
     <Compile Include="Converters\ExpandoObjectConverter.cs" />
     <Compile Include="Converters\IsoDateTimeConverter.cs" />
     <Compile Include="Converters\JavaScriptDateTimeConverter.cs" />
-    <Compile Include="Converters\JsonValueConverter.cs" />
     <Compile Include="Converters\KeyValuePairConverter.cs" />
     <Compile Include="Converters\RegexConverter.cs" />
     <Compile Include="Converters\StringEnumConverter.cs" />
@@ -133,6 +132,8 @@
     <Compile Include="Linq\JsonPath\PathFilter.cs" />
     <Compile Include="Linq\JsonPath\QueryExpression.cs" />
     <Compile Include="Linq\JsonPath\QueryFilter.cs" />
+    <Compile Include="Linq\JsonPath\RootFilter.cs" />
+    <Compile Include="Linq\JsonPath\ScanMultipleFilter.cs" />
     <Compile Include="Linq\JsonPath\ScanFilter.cs" />
     <Compile Include="Linq\JToken.cs" />
     <Compile Include="Linq\JTokenEqualityComparer.cs" />
@@ -170,8 +171,13 @@
     <Compile Include="Schema\ValidationEventHandler.cs" />
     <Compile Include="SerializationBinder.cs" />
     <Compile Include="Serialization\CachedAttributeGetter.cs" />
+    <Compile Include="Serialization\ISerializationBinder.cs" />
+    <Compile Include="Serialization\SerializationBinderAdapter.cs" />
+    <Compile Include="Serialization\SnakeCaseNamingStrategy.cs" />
+    <Compile Include="Serialization\CamelCaseNamingStrategy.cs" />
     <Compile Include="Serialization\CamelCasePropertyNamesContractResolver.cs" />
     <Compile Include="Serialization\DefaultContractResolver.cs" />
+    <Compile Include="Serialization\DefaultNamingStrategy.cs" />
     <Compile Include="Serialization\DefaultReferenceResolver.cs" />
     <Compile Include="Serialization\DefaultSerializationBinder.cs" />
     <Compile Include="Serialization\DiagnosticsTraceWriter.cs" />
@@ -181,6 +187,7 @@
     <Compile Include="Serialization\ExpressionValueProvider.cs" />
     <Compile Include="Serialization\IAttributeProvider.cs" />
     <Compile Include="Serialization\IContractResolver.cs" />
+    <Compile Include="Serialization\NamingStrategy.cs" />
     <Compile Include="Serialization\IReferenceResolver.cs" />
     <Compile Include="Serialization\ITraceWriter.cs" />
     <Compile Include="Serialization\IValueProvider.cs" />
@@ -209,6 +216,7 @@
     <Compile Include="Serialization\ReflectionValueProvider.cs" />
     <Compile Include="Serialization\TraceJsonReader.cs" />
     <Compile Include="Serialization\TraceJsonWriter.cs" />
+    <Compile Include="TypeNameAssemblyFormatHandling.cs" />
     <Compile Include="StringEscapeHandling.cs" />
     <Compile Include="TraceLevel.cs" />
     <Compile Include="TypeNameHandling.cs" />
@@ -225,6 +233,7 @@
     <Compile Include="Utilities\DynamicReflectionDelegateFactory.cs" />
     <Compile Include="Utilities\DynamicUtils.cs" />
     <Compile Include="Utilities\JsonTokenUtils.cs" />
+    <Compile Include="Utilities\MethodBinder.cs" />
     <Compile Include="Utilities\PropertyNameTable.cs" />
     <Compile Include="Utilities\ReflectionObject.cs" />
     <Compile Include="Utilities\EnumUtils.cs" />

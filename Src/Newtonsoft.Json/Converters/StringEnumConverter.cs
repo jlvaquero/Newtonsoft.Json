@@ -1,4 +1,5 @@
 ﻿#region License
+
 // Copyright (c) 2007 James Newton-King
 //
 // Permission is hereby granted, free of charge, to any person
@@ -21,6 +22,7 @@
 // WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 // OTHER DEALINGS IN THE SOFTWARE.
+
 #endregion
 
 using System;
@@ -50,9 +52,9 @@ namespace Newtonsoft.Json.Converters
         public bool CamelCaseText { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether integer values are allowed.
+        /// Gets or sets a value indicating whether integer values are allowed when deserializing.
         /// </summary>
-        /// <value><c>true</c> if integers are allowed; otherwise, <c>false</c>.</value>
+        /// <value><c>true</c> if integers are allowed when deserializing; otherwise, <c>false</c>.</value>
         public bool AllowIntegerValues { get; set; }
 
         /// <summary>
@@ -134,7 +136,8 @@ namespace Newtonsoft.Json.Converters
                 if (reader.TokenType == JsonToken.String)
                 {
                     string enumText = reader.Value.ToString();
-                    return EnumUtils.ParseEnumName(enumText, isNullable, t);
+
+                    return EnumUtils.ParseEnumName(enumText, isNullable, !AllowIntegerValues, t);
                 }
 
                 if (reader.TokenType == JsonToken.Integer)

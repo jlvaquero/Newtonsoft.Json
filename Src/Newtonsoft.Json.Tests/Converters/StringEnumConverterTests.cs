@@ -31,11 +31,7 @@ using System.Runtime.Serialization;
 using System.Text;
 using System.Text.RegularExpressions;
 using Newtonsoft.Json.Converters;
-#if NETFX_CORE
-using Microsoft.VisualStudio.TestPlatform.UnitTestFramework;
-using TestFixture = Microsoft.VisualStudio.TestPlatform.UnitTestFramework.TestClassAttribute;
-using Test = Microsoft.VisualStudio.TestPlatform.UnitTestFramework.TestMethodAttribute;
-#elif DNXCORE50
+#if DNXCORE50
 using Xunit;
 using Test = Xunit.FactAttribute;
 using Assert = Newtonsoft.Json.Tests.XUnitAssert;
@@ -95,6 +91,21 @@ namespace Newtonsoft.Json.Tests.Converters
             [EnumMember(Value = "@second")]
             Second,
             Third
+        }
+
+        public enum NamedEnumWithComma
+        {
+            [EnumMember(Value = "@first")]
+            First,
+
+            [EnumMember(Value = "@second")]
+            Second,
+
+            [EnumMember(Value = ",third")]
+            Third,
+
+            [EnumMember(Value = ",")]
+            JustComma
         }
 #endif
 
@@ -163,6 +174,40 @@ namespace Newtonsoft.Json.Tests.Converters
             StringAssert.AreEqual(@"{
   ""Enum"": ""Third""
 }", json);
+        }
+
+        [Test]
+        public void NamedEnumCommaTest()
+        {
+            EnumContainer<NamedEnumWithComma> c = new EnumContainer<NamedEnumWithComma>
+            {
+                Enum = NamedEnumWithComma.Third
+            };
+
+            string json = JsonConvert.SerializeObject(c, Formatting.Indented, new StringEnumConverter());
+            Assert.AreEqual(@"{
+  ""Enum"": "",third""
+}", json);
+
+            EnumContainer<NamedEnumWithComma> c2 = JsonConvert.DeserializeObject<EnumContainer<NamedEnumWithComma>>(json, new StringEnumConverter());
+            Assert.AreEqual(NamedEnumWithComma.Third, c2.Enum);
+        }
+
+        [Test]
+        public void NamedEnumCommaTest2()
+        {
+            EnumContainer<NamedEnumWithComma> c = new EnumContainer<NamedEnumWithComma>
+            {
+                Enum = NamedEnumWithComma.JustComma
+            };
+
+            string json = JsonConvert.SerializeObject(c, Formatting.Indented, new StringEnumConverter());
+            Assert.AreEqual(@"{
+  ""Enum"": "",""
+}", json);
+
+            EnumContainer<NamedEnumWithComma> c2 = JsonConvert.DeserializeObject<EnumContainer<NamedEnumWithComma>>(json, new StringEnumConverter());
+            Assert.AreEqual(NamedEnumWithComma.JustComma, c2.Enum);
         }
 
         [Test]
@@ -524,6 +569,120 @@ namespace Newtonsoft.Json.Tests.Converters
                 Assert.AreEqual(DuplicateNameEnum2.FooBar, o.Value2);
             }, "Type 'Newtonsoft.Json.Tests.Converters.DuplicateNameEnum' contains two members 'foo_bar' 'and 'FooBar' with the same name 'foo_bar'. Multiple members with the same name in one type are not supported. Consider changing one of the member names using EnumMemberAttribute attribute.");
         }
+
+        [Test]
+        public void EnumMemberWithNumbers()
+        {
+            StringEnumConverter converter = new StringEnumConverter();
+
+            NumberNamesEnum e = JsonConvert.DeserializeObject<NumberNamesEnum>("\"1\"", converter);
+
+            Assert.AreEqual(NumberNamesEnum.second, e);
+
+            e = JsonConvert.DeserializeObject<NumberNamesEnum>("\"2\"", converter);
+
+            Assert.AreEqual(NumberNamesEnum.first, e);
+
+            e = JsonConvert.DeserializeObject<NumberNamesEnum>("\"3\"", converter);
+
+            Assert.AreEqual(NumberNamesEnum.third, e);
+        }
+
+        [Test]
+        public void EnumMemberWithNumbers_NoIntegerValues()
+        {
+            StringEnumConverter converter = new StringEnumConverter { AllowIntegerValues = false };
+
+            NumberNamesEnum e = JsonConvert.DeserializeObject<NumberNamesEnum>("\"1\"", converter);
+
+            Assert.AreEqual(NumberNamesEnum.second, e);
+
+            e = JsonConvert.DeserializeObject<NumberNamesEnum>("\"2\"", converter);
+
+            Assert.AreEqual(NumberNamesEnum.first, e);
+
+            e = JsonConvert.DeserializeObject<NumberNamesEnum>("\"3\"", converter);
+
+            Assert.AreEqual(NumberNamesEnum.third, e);
+        }
+#endif
+
+        [Test]
+        public void AllowIntegerValueAndStringNumber()
+        {
+            JsonSerializationException ex = ExceptionAssert.Throws<JsonSerializationException>(() =>
+            {
+                JsonConvert.DeserializeObject<StoreColor>("\"1\"", new StringEnumConverter {AllowIntegerValues = false});
+            });
+
+            Assert.AreEqual("Integer string '1' is not allowed.", ex.InnerException.Message);
+        }
+
+        public enum EnumWithDifferentCases
+        {
+            M,
+            m
+        }
+
+        [Test]
+        public void SerializeEnumWithDifferentCases()
+        {
+            string json = JsonConvert.SerializeObject(EnumWithDifferentCases.M, new StringEnumConverter());
+
+            Assert.AreEqual(@"""M""", json);
+
+            json = JsonConvert.SerializeObject(EnumWithDifferentCases.m, new StringEnumConverter());
+
+            Assert.AreEqual(@"""m""", json);
+        }
+
+        [Test]
+        public void DeserializeEnumWithDifferentCases()
+        {
+            EnumWithDifferentCases e = JsonConvert.DeserializeObject<EnumWithDifferentCases>(@"""M""", new StringEnumConverter());
+
+            Assert.AreEqual(EnumWithDifferentCases.M, e);
+
+            e = JsonConvert.DeserializeObject<EnumWithDifferentCases>(@"""m""", new StringEnumConverter());
+
+            // unfortunatly Enum.Parse with ignoreCase will find the first match rather than the best match
+            // it would be great to find a way around this
+            Assert.AreEqual(EnumWithDifferentCases.M, e);
+        }
+
+#if !NET20
+        [DataContract(Name = "DateFormats")]
+        public enum EnumMemberWithDifferentCases
+        {
+            [EnumMember(Value = "M")]
+            Month,
+            [EnumMember(Value = "m")]
+            Minute
+        }
+
+        [Test]
+        public void SerializeEnumMemberWithDifferentCases()
+        {
+            string json = JsonConvert.SerializeObject(EnumMemberWithDifferentCases.Month, new StringEnumConverter());
+
+            Assert.AreEqual(@"""M""", json);
+
+            json = JsonConvert.SerializeObject(EnumMemberWithDifferentCases.Minute, new StringEnumConverter());
+
+            Assert.AreEqual(@"""m""", json);
+        }
+
+        [Test]
+        public void DeserializeEnumMemberWithDifferentCases()
+        {
+            EnumMemberWithDifferentCases e = JsonConvert.DeserializeObject<EnumMemberWithDifferentCases>(@"""M""", new StringEnumConverter());
+
+            Assert.AreEqual(EnumMemberWithDifferentCases.Month, e);
+
+            e = JsonConvert.DeserializeObject<EnumMemberWithDifferentCases>(@"""m""", new StringEnumConverter());
+
+            Assert.AreEqual(EnumMemberWithDifferentCases.Minute, e);
+        }
 #endif
     }
 
@@ -536,6 +695,17 @@ namespace Newtonsoft.Json.Tests.Converters
 
         [DataMember]
         public DuplicateNameEnum2 Value2 { get; set; }
+    }
+
+    [DataContract]
+    public enum NumberNamesEnum
+    {
+        [EnumMember(Value = "2")]
+        first,
+        [EnumMember(Value = "1")]
+        second,
+        [EnumMember(Value = "3")]
+        third
     }
 
     [DataContract]

@@ -130,7 +130,9 @@
     <Compile Include="Linq\JsonPath\PathFilter.cs" />
     <Compile Include="Linq\JsonPath\QueryExpression.cs" />
     <Compile Include="Linq\JsonPath\QueryFilter.cs" />
+    <Compile Include="Linq\JsonPath\RootFilter.cs" />
     <Compile Include="Linq\JsonPath\ScanFilter.cs" />
+    <Compile Include="Linq\JsonPath\ScanMultipleFilter.cs" />
     <Compile Include="Linq\JToken.cs" />
     <Compile Include="Linq\JTokenEqualityComparer.cs" />
     <Compile Include="Linq\JTokenReader.cs" />
@@ -166,7 +168,9 @@
     <Compile Include="Schema\ValidationEventHandler.cs" />
     <Compile Include="SerializationBinder.cs" />
     <Compile Include="Serialization\CachedAttributeGetter.cs" />
+    <Compile Include="Serialization\CamelCaseNamingStrategy.cs" />
     <Compile Include="Serialization\CamelCasePropertyNamesContractResolver.cs" />
+    <Compile Include="Serialization\DefaultNamingStrategy.cs" />
     <Compile Include="Serialization\ExpressionValueProvider.cs" />
     <Compile Include="Serialization\DefaultContractResolver.cs" />
     <Compile Include="Serialization\DefaultReferenceResolver.cs" />
@@ -178,6 +182,7 @@
     <Compile Include="Serialization\IAttributeProvider.cs" />
     <Compile Include="Serialization\IContractResolver.cs" />
     <Compile Include="Serialization\IReferenceResolver.cs" />
+    <Compile Include="Serialization\ISerializationBinder.cs" />
     <Compile Include="Serialization\ITraceWriter.cs" />
     <Compile Include="Serialization\IValueProvider.cs" />
     <Compile Include="Serialization\JsonArrayContract.cs" />
@@ -199,14 +204,18 @@
     <Compile Include="Serialization\JsonStringContract.cs" />
     <Compile Include="Serialization\JsonTypeReflector.cs" />
     <Compile Include="Serialization\MemoryTraceWriter.cs" />
+    <Compile Include="Serialization\NamingStrategy.cs" />
     <Compile Include="Serialization\ObjectConstructor.cs" />
     <Compile Include="Serialization\OnErrorAttribute.cs" />
     <Compile Include="Serialization\ReflectionAttributeProvider.cs" />
     <Compile Include="Serialization\ReflectionValueProvider.cs" />
+    <Compile Include="Serialization\SerializationBinderAdapter.cs" />
+    <Compile Include="Serialization\SnakeCaseNamingStrategy.cs" />
     <Compile Include="Serialization\TraceJsonReader.cs" />
     <Compile Include="Serialization\TraceJsonWriter.cs" />
     <Compile Include="StringEscapeHandling.cs" />
     <Compile Include="TraceLevel.cs" />
+    <Compile Include="TypeNameAssemblyFormatHandling.cs" />
     <Compile Include="TypeNameHandling.cs" />
     <Compile Include="Utilities\Base64Encoder.cs" />
     <Compile Include="Utilities\BidirectionalDictionary.cs" />
@@ -231,6 +240,7 @@
     <Compile Include="Utilities\LateBoundReflectionDelegateFactory.cs" />
     <Compile Include="Utilities\LinqBridge.cs" />
     <Compile Include="Utilities\MathUtils.cs" />
+    <Compile Include="Utilities\MethodBinder.cs" />
     <Compile Include="Utilities\MethodCall.cs" />
     <Compile Include="Utilities\MiscellaneousUtils.cs" />
     <Compile Include="Utilities\PropertyNameTable.cs" />

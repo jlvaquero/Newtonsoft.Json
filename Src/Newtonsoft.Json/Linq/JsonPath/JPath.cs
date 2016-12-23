@@ -111,12 +111,11 @@ namespace Newtonsoft.Json.Linq.JsonPath
                                 member = null;
                             }
 
-                            PathFilter filter = (scan) ? (PathFilter)new ScanFilter { Name = member } : new FieldFilter { Name = member };
-                            filters.Add(filter);
+                            filters.Add(CreatePathFilter(member, scan));
                             scan = false;
                         }
 
-                        filters.Add(ParseIndexer(currentChar));
+                        filters.Add(ParseIndexer(currentChar, scan));
                         _currentIndex++;
                         currentPartStartIndex = _currentIndex;
                         followingIndexer = true;
@@ -141,8 +140,7 @@ namespace Newtonsoft.Json.Linq.JsonPath
                                 member = null;
                             }
 
-                            PathFilter filter = (scan) ? (PathFilter)new ScanFilter { Name = member } : new FieldFilter { Name = member };
-                            filters.Add(filter);
+                            filters.Add(CreatePathFilter(member, scan));
                             scan = false;
                         }
                         if (_currentIndex + 1 < _expression.Length && _expression[_currentIndex + 1] == '.')
@@ -182,8 +180,7 @@ namespace Newtonsoft.Json.Linq.JsonPath
                 {
                     member = null;
                 }
-                PathFilter filter = (scan) ? (PathFilter)new ScanFilter { Name = member } : new FieldFilter { Name = member };
-                filters.Add(filter);
+                filters.Add(CreatePathFilter(member, scan));
             }
             else
             {
@@ -197,7 +194,13 @@ namespace Newtonsoft.Json.Linq.JsonPath
             return atPathEnd;
         }
 
-        private PathFilter ParseIndexer(char indexerOpenChar)
+        private static PathFilter CreatePathFilter(string member, bool scan)
+        {
+            PathFilter filter = (scan) ? (PathFilter)new ScanFilter {Name = member} : new FieldFilter {Name = member};
+            return filter;
+        }
+
+        private PathFilter ParseIndexer(char indexerOpenChar, bool scan)
         {
             _currentIndex++;
 
@@ -209,7 +212,7 @@ namespace Newtonsoft.Json.Linq.JsonPath
 
             if (_expression[_currentIndex] == '\'')
             {
-                return ParseQuotedField(indexerCloseChar);
+                return ParseQuotedField(indexerCloseChar, scan);
             }
             else if (_expression[_currentIndex] == '?')
             {
@@ -429,14 +432,18 @@ namespace Newtonsoft.Json.Linq.JsonPath
             {
                 EatWhitespace();
 
-                if (_expression[_currentIndex] != '@')
+                List<PathFilter> expressionPath = new List<PathFilter>();
+
+                if (_expression[_currentIndex] == '$')
+                {
+                    expressionPath.Add(RootFilter.Instance);
+                }
+                else if (_expression[_currentIndex] != '@')
                 {
                     throw new JsonException("Unexpected character while parsing path query: " + _expression[_currentIndex]);
                 }
 
                 _currentIndex++;
-
-                List<PathFilter> expressionPath = new List<PathFilter>();
 
                 if (ParsePath(expressionPath, _currentIndex, true))
                 {
@@ -706,7 +713,7 @@ namespace Newtonsoft.Json.Linq.JsonPath
             throw new JsonException("Could not read query operator.");
         }
 
-        private PathFilter ParseQuotedField(char indexerCloseChar)
+        private PathFilter ParseQuotedField(char indexerCloseChar, bool scan)
         {
             List<string> fields = null;
 
@@ -722,11 +729,13 @@ namespace Newtonsoft.Json.Linq.JsonPath
                     if (fields != null)
                     {
                         fields.Add(field);
-                        return new FieldMultipleFilter { Names = fields };
+                        return (scan)
+                            ? (PathFilter)new ScanMultipleFilter { Names = fields }
+                            : (PathFilter)new FieldMultipleFilter { Names = fields };
                     }
                     else
                     {
-                        return new FieldFilter { Name = field };
+                        return CreatePathFilter(field, scan);
                     }
                 }
                 else if (_expression[_currentIndex] == ',')
@@ -758,17 +767,17 @@ namespace Newtonsoft.Json.Linq.JsonPath
             }
         }
 
-        internal IEnumerable<JToken> Evaluate(JToken t, bool errorWhenNoMatch)
+        internal IEnumerable<JToken> Evaluate(JToken root, JToken t, bool errorWhenNoMatch)
         {
-            return Evaluate(Filters, t, errorWhenNoMatch);
+            return Evaluate(Filters, root, t, errorWhenNoMatch);
         }
 
-        internal static IEnumerable<JToken> Evaluate(List<PathFilter> filters, JToken t, bool errorWhenNoMatch)
+        internal static IEnumerable<JToken> Evaluate(List<PathFilter> filters, JToken root, JToken t, bool errorWhenNoMatch)
         {
             IEnumerable<JToken> current = new[] { t };
             foreach (PathFilter filter in filters)
             {
-                current = filter.ExecuteFilter(current, errorWhenNoMatch);
+                current = filter.ExecuteFilter(root, current, errorWhenNoMatch);
             }
 
             return current;

@@ -28,13 +28,11 @@ using System.Collections.Generic;
 using System.Runtime.Serialization.Formatters;
 using System.Text;
 using Newtonsoft.Json.Linq;
+using Newtonsoft.Json.Serialization;
 using Newtonsoft.Json.Tests.TestObjects;
+using Newtonsoft.Json.Tests.TestObjects.Organization;
 using Newtonsoft.Json.Utilities;
-#if NETFX_CORE
-using Microsoft.VisualStudio.TestPlatform.UnitTestFramework;
-using TestFixture = Microsoft.VisualStudio.TestPlatform.UnitTestFramework.TestClassAttribute;
-using Test = Microsoft.VisualStudio.TestPlatform.UnitTestFramework.TestMethodAttribute;
-#elif DNXCORE50
+#if DNXCORE50
 using Xunit;
 using Test = Xunit.FactAttribute;
 using Assert = Newtonsoft.Json.Tests.XUnitAssert;
@@ -114,7 +112,6 @@ namespace Newtonsoft.Json.Tests.Serialization
             }, @"Cannot preserve reference to array or readonly list, or list created from a non-default constructor: System.String[][]. Path '$values', line 3, position 14.");
         }
 
-#if !NETFX_CORE
         [Test]
         public void SerializeDeserialize_DictionaryContextContainsGuid_DeserializesItemAsGuid()
         {
@@ -133,7 +130,7 @@ namespace Newtonsoft.Json.Tests.Serialization
             string serializedString = JsonConvert.SerializeObject(inputContext, jsonSerializerSettings);
 
             StringAssert.AreEqual(@"{
-  ""$type"": ""System.Collections.Generic.Dictionary`2[[System.String, mscorlib],[System.Guid, mscorlib]], mscorlib"",
+  ""$type"": """ + ReflectionUtils.GetTypeName(typeof(Dictionary<string, Guid>), 0, DefaultSerializationBinder.Instance) + @""",
   ""k1"": ""5dd2dba0-20c0-49f8-a054-1fa3b0a8d774""
 }", serializedString);
 
@@ -141,7 +138,6 @@ namespace Newtonsoft.Json.Tests.Serialization
 
             Assert.AreEqual(someValue, deserializedObject[contextKey]);
         }
-#endif
 
         [Test]
         public void DeserializeGuid()
@@ -165,7 +161,7 @@ namespace Newtonsoft.Json.Tests.Serialization
   ""Longitude"": -117.766684,
   ""TimeStamp"": ""2000-03-01T23:59:59Z"",
   ""Payload"": {
-    ""$type"": ""System.Byte[], mscorlib"",
+    ""$type"": """ + ReflectionUtils.GetTypeName(typeof(byte[]), 0, DefaultSerializationBinder.Instance) + @""",
     ""$value"": ""AAECAwQFBgcICQ==""
   }
 }", jsonString);
@@ -375,7 +371,9 @@ namespace Newtonsoft.Json.Tests.Serialization
             List<object> values = (List<object>)JsonConvert.DeserializeObject(json, typeof(List<object>), new JsonSerializerSettings
             {
                 TypeNameHandling = TypeNameHandling.Objects,
+#pragma warning disable 618
                 TypeNameAssemblyFormat = FormatterAssemblyStyle.Full,
+#pragma warning restore 618
                 MetadataPropertyHandling = MetadataPropertyHandling.ReadAhead
             });
 
@@ -398,7 +396,7 @@ namespace Newtonsoft.Json.Tests.Serialization
         [Test]
         public void WriteListTypeNameForProperty()
         {
-            string listRef = ReflectionUtils.GetTypeName(typeof(List<int>), FormatterAssemblyStyle.Simple, null);
+            string listRef = ReflectionUtils.GetTypeName(typeof(List<int>), TypeNameAssemblyFormatHandling.Simple, null);
 
             TypeNameHandlingTests.TypeNameProperty typeNameProperty = new TypeNameHandlingTests.TypeNameProperty
             {
